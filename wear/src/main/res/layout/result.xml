@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+<android.support.wearable.view.BoxInsetLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.seventhmoon.tennisumpire.ResultActivity"
+    tools:deviceIds="wear">
 
     <LinearLayout
         android:orientation="vertical"
@@ -25,18 +30,22 @@
                 android:layout_weight="1">
 
                 <TextView
-                    android:text="TextView"
+                    android:text=""
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:id="@+id/set1_up"
-                    android:layout_weight="1"/>
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:textSize="40sp"/>
 
                 <TextView
-                    android:text="TextView"
+                    android:text=""
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:id="@+id/set1_down"
-                    android:layout_weight="1"/>
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:textSize="40sp"/>
             </LinearLayout>
 
             <LinearLayout
@@ -46,18 +55,22 @@
                 android:layout_weight="1">
 
                 <TextView
-                    android:text="TextView"
+                    android:text=""
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:id="@+id/set2_up"
-                    android:layout_weight="1"/>
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:textSize="40sp"/>
 
                 <TextView
-                    android:text="TextView"
+                    android:text=""
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:id="@+id/set2_down"
-                    android:layout_weight="1"/>
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:textSize="40sp"/>
             </LinearLayout>
 
             <LinearLayout
@@ -67,18 +80,22 @@
                 android:layout_weight="1">
 
                 <TextView
-                    android:text="TextView"
+                    android:text=""
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:id="@+id/set3_up"
-                    android:layout_weight="1"/>
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:textSize="40sp"/>
 
                 <TextView
-                    android:text="TextView"
+                    android:text=""
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:id="@+id/set3_down"
-                    android:layout_weight="1"/>
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:textSize="40sp"/>
             </LinearLayout>
 
             <LinearLayout
@@ -88,18 +105,22 @@
                 android:layout_weight="1">
 
                 <TextView
-                    android:text="TextView"
+                    android:text=""
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:id="@+id/set4_up"
-                    android:layout_weight="1"/>
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:textSize="40sp"/>
 
                 <TextView
-                    android:text="TextView"
+                    android:text=""
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:id="@+id/set4_down"
-                    android:layout_weight="1"/>
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:textSize="40sp"/>
             </LinearLayout>
 
             <LinearLayout
@@ -109,18 +130,22 @@
                 android:layout_weight="1">
 
                 <TextView
-                    android:text="TextView"
+                    android:text=""
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:id="@+id/set5_up"
-                    android:layout_weight="1"/>
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:textSize="40sp"/>
 
                 <TextView
-                    android:text="TextView"
+                    android:text=""
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:id="@+id/set5_down"
-                    android:layout_weight="1"/>
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:textSize="40sp"/>
             </LinearLayout>
         </LinearLayout>
 
@@ -138,4 +163,5 @@
                 android:layout_weight="1" />
         </LinearLayout>
     </LinearLayout>
-</LinearLayout>
+
+</android.support.wearable.view.BoxInsetLayout>
