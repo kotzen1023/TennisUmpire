@@ -338,6 +338,17 @@ public class GameActivity extends WearableActivity {
             intent.putExtra("SET4_GAME_DOWN", String.valueOf(current_state.getSet_game_down((byte)0x04)));
             intent.putExtra("SET5_GAME_UP",   String.valueOf(current_state.getSet_game_up((byte)0x05)));
             intent.putExtra("SET5_GAME_DOWN", String.valueOf(current_state.getSet_game_down((byte)0x05)));
+
+            intent.putExtra("SET1_TIEBREAK_UP",   String.valueOf(current_state.getSet_tiebreak_point_up((byte)0x01)));
+            intent.putExtra("SET1_TIEBREAK_DOWN", String.valueOf(current_state.getSet_tiebreak_point_down((byte)0x01)));
+            intent.putExtra("SET2_TIEBREAK_UP",   String.valueOf(current_state.getSet_tiebreak_point_up((byte)0x02)));
+            intent.putExtra("SET2_TIEBREAK_DOWN", String.valueOf(current_state.getSet_tiebreak_point_down((byte)0x02)));
+            intent.putExtra("SET3_TIEBREAK_UP",   String.valueOf(current_state.getSet_tiebreak_point_up((byte)0x03)));
+            intent.putExtra("SET3_TIEBREAK_DOWN", String.valueOf(current_state.getSet_tiebreak_point_down((byte)0x03)));
+            intent.putExtra("SET4_TIEBREAK_UP",   String.valueOf(current_state.getSet_tiebreak_point_up((byte)0x04)));
+            intent.putExtra("SET4_TIEBREAK_DOWN", String.valueOf(current_state.getSet_tiebreak_point_down((byte)0x04)));
+            intent.putExtra("SET5_TIEBREAK_UP",   String.valueOf(current_state.getSet_tiebreak_point_up((byte)0x05)));
+            intent.putExtra("SET5_TIEBREAK_DOWN", String.valueOf(current_state.getSet_tiebreak_point_down((byte)0x05)));
             startActivity(intent);
         } else {
             Log.d(TAG, "*** Game is running ***");
@@ -576,6 +587,8 @@ public class GameActivity extends WearableActivity {
                     new_state.setServe(true);
                 }
 
+                //leave tiebreak;
+                new_state.setInTiebreak(false);
             } else if (new_state.getSet_point_up(current_set) <= 5 && new_state.getSet_point_down(current_set) == 7) {
                 //0,1,2,3,4,5 : 7 => you win this game
                 //set tiebreak point
@@ -594,6 +607,8 @@ public class GameActivity extends WearableActivity {
                 } else {
                     new_state.setServe(true);
                 }
+                //leave tiebreak;
+                new_state.setInTiebreak(false);
             } else if (new_state.getSet_point_up(current_set) >= 6 &&
                     new_state.getSet_point_down(current_set) >= 6 &&
                     (new_state.getSet_point_up(current_set) - new_state.getSet_point_down(current_set)) == 2) {
@@ -615,7 +630,8 @@ public class GameActivity extends WearableActivity {
                     new_state.setServe(true);
                 }
 
-
+                //leave tiebreak;
+                new_state.setInTiebreak(false);
             } else if (new_state.getSet_point_up(current_set) >= 6 &&
                     new_state.getSet_point_down(current_set) >= 6 &&
                     (new_state.getSet_point_down(current_set) - new_state.getSet_point_up(current_set)) == 2) {
@@ -636,6 +652,9 @@ public class GameActivity extends WearableActivity {
                 } else {
                     new_state.setServe(true);
                 }
+
+                //leave tiebreak;
+                new_state.setInTiebreak(false);
             }
 
             byte plus = (byte) (new_state.getSet_point_up(current_set)+new_state.getSet_point_down(current_set));
