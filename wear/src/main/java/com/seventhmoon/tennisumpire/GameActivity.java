@@ -327,6 +327,8 @@ public class GameActivity extends WearableActivity {
 
         if (current_state != null && current_state.isFinish()) {
             Log.d(TAG, "*** Game is Over ***");
+            handler.removeCallbacks(updateTimer);
+
             Intent intent = new Intent(GameActivity.this, ResultActivity.class);
             intent.putExtra("SET1_GAME_UP",   String.valueOf(current_state.getSet_game_up((byte)0x01)));
             intent.putExtra("SET1_GAME_DOWN", String.valueOf(current_state.getSet_game_down((byte)0x01)));
@@ -349,6 +351,10 @@ public class GameActivity extends WearableActivity {
             intent.putExtra("SET4_TIEBREAK_DOWN", String.valueOf(current_state.getSet_tiebreak_point_down((byte)0x04)));
             intent.putExtra("SET5_TIEBREAK_UP",   String.valueOf(current_state.getSet_tiebreak_point_up((byte)0x05)));
             intent.putExtra("SET5_TIEBREAK_DOWN", String.valueOf(current_state.getSet_tiebreak_point_down((byte)0x05)));
+
+            intent.putExtra("GAME_DURATION", String.valueOf(String.valueOf(time_use)));
+
+
             startActivity(intent);
         } else {
             Log.d(TAG, "*** Game is running ***");

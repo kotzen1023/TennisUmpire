@@ -8,6 +8,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+
 public class ResultActivity extends WearableActivity {
     private static final String TAG = ResultActivity.class.getName();
 
@@ -31,6 +34,7 @@ public class ResultActivity extends WearableActivity {
     private TextView textViewSet4TieBreakDown;
     private TextView textViewSet5TieBreakUp;
     private TextView textViewSet5TieBreakDown;
+    private TextView textViewDuration;
 
     private Button btnOK;
 
@@ -65,6 +69,8 @@ public class ResultActivity extends WearableActivity {
         String set5_tiebreak_up = intent.getStringExtra("SET5_TIEBREAK_UP");
         String set5_tiebreak_down = intent.getStringExtra("SET5_TIEBREAK_DOWN");
 
+        String duration = intent.getStringExtra("GAME_DURATION");
+
         textViewSet1Up = (TextView) findViewById(R.id.set1_up);
         textViewSet1Down = (TextView) findViewById(R.id.set1_down);
         textViewSet2Up = (TextView) findViewById(R.id.set2_up);
@@ -86,6 +92,8 @@ public class ResultActivity extends WearableActivity {
         textViewSet4TieBreakDown = (TextView) findViewById(R.id.set4_tibreak_down);
         textViewSet5TieBreakUp = (TextView) findViewById(R.id.set5_tibreak_up);
         textViewSet5TieBreakDown = (TextView) findViewById(R.id.set5_tibreak_down);
+
+        textViewDuration = (TextView) findViewById(R.id.duration);
 
         if (set1_up.equals("0") && set1_down.equals("0"))
             Log.d(TAG, "1 Don't care");
@@ -162,6 +170,12 @@ public class ResultActivity extends WearableActivity {
             textViewSet3TieBreakUp.setVisibility(View.VISIBLE);
             textViewSet3TieBreakDown.setVisibility(View.VISIBLE);
         }
+
+        NumberFormat f = new DecimalFormat("00");
+        Long hour = (Long.valueOf(duration))/3600;
+        Long minius = (Long.valueOf(duration))%3600/60;
+
+        textViewDuration.setText(f.format(hour)+":"+f.format(minius));
 
         btnOK = (Button) findViewById(R.id.btnResultOk);
 
