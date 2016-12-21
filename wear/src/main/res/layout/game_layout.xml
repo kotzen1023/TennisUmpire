@@ -134,7 +134,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:id="@+id/btnOpptScore"
-                        android:textSize="7sp"
+                        android:textSize="6sp"
                         android:layout_weight="1" />
 
                     <Button
@@ -142,7 +142,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:id="@+id/btnBack"
-                        android:textSize="8sp"
+                        android:textSize="7sp"
                         android:layout_weight="1" />
                 </LinearLayout>
 
@@ -159,7 +159,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:id="@+id/btnYouScore"
-                        android:textSize="7sp"
+                        android:textSize="6sp"
                         android:layout_weight="1" />
 
                     <Button
@@ -167,7 +167,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:id="@+id/btnReset"
-                        android:textSize="8sp"
+                        android:textSize="7sp"
                         android:layout_weight="1" />
                 </LinearLayout>
             </LinearLayout>

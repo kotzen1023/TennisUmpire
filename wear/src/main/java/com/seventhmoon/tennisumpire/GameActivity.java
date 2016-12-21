@@ -32,7 +32,7 @@ public class GameActivity extends WearableActivity {
     //private static final SimpleDateFormat AMBIENT_DATE_FORMAT =
     //        new SimpleDateFormat("HH:mm", Locale.TAIWAN);
 
-    private BoxInsetLayout mContainerView;
+    //private BoxInsetLayout mContainerView;
 
     private TextView gameUp;
     private TextView gameDown;
@@ -87,7 +87,7 @@ public class GameActivity extends WearableActivity {
         Log.e(TAG, "DEUCE = "+deuce);
         Log.e(TAG, "SERVE = "+serve);
 
-        mContainerView = (BoxInsetLayout) findViewById(R.id.container);
+        //mContainerView = (BoxInsetLayout) findViewById(R.id.container);
 
         gameUp = (TextView) findViewById(R.id.textViewGameUp);
         gameDown = (TextView) findViewById(R.id.textViewGameDown);
@@ -269,7 +269,7 @@ public class GameActivity extends WearableActivity {
     }
 
     private void updateDisplay() {
-        if (isAmbient()) {
+        /*if (isAmbient()) {
             mContainerView.setBackgroundColor(getResources().getColor(android.R.color.black));
             //mTextView.setTextColor(getResources().getColor(android.R.color.white));
             mClockView.setTextColor(getResources().getColor(android.R.color.black));
@@ -280,7 +280,7 @@ public class GameActivity extends WearableActivity {
             mContainerView.setBackground(null);
             mClockView.setTextColor(getResources().getColor(android.R.color.black));
             mClockView.setVisibility(View.GONE);
-        }
+        }*/
 
 
     }
