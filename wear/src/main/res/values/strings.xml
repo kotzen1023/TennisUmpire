@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">Wear Tennis Umpire</string>
+    <string name="setup_one_set">1 set</string>
+    <string name="setup_three_sets">3 Sets</string>
+    <string name="setup_five_set">5 Sets</string>
+    <string name="setup_four_game">4 Games</string>
+    <string name="setup_six_games">6 Games</string>
+    <string name="setup_tiebreak">Tiebreak</string>
+    <string name="setup_deuce">Deuce</string>
+    <string name="setup_deciding_game">Deciding Game</string>
+    <string name="setup_deciding_point">Deciding Point</string>
+    <string name="setup_serve_first">Serve</string>
+    <string name="setup_receive">Receive</string>
+
+</resources>

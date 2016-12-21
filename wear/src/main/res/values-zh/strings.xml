@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Wear Tennis Umpire</string>
+    <string name="setup_one_set">1 盤</string>
+    <string name="setup_three_sets">3 盤</string>
+    <string name="setup_five_set">5 盤</string>
+    <string name="setup_six_games">6 局</string>
+    <string name="setup_four_game">4 局</string>
+    <string name="setup_tiebreak">搶7</string>
+    <string name="setup_deuce">Deuce</string>
+    <string name="setup_deciding_game">決勝局</string>
+    <string name="setup_deciding_point">決勝分</string>
+    <string name="setup_serve_first">發球</string>
+    <string name="setup_receive">接發球</string>
+</resources>
