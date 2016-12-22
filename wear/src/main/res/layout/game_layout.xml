@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.wearable.view.BoxInsetLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<android.support.wearable.view.BoxInsetLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -12,7 +13,8 @@
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        app:layout_box="all">
 
 
         <LinearLayout
@@ -36,7 +38,7 @@
                     android:id="@+id/textViewGameUp"
                     android:layout_weight="1"
                     android:gravity="center"
-                    android:textSize="50sp"/>
+                    android:textSize="40sp"/>
 
                 <TextView
                     android:text="3"
@@ -45,14 +47,14 @@
                     android:id="@+id/textViewGameDown"
                     android:layout_weight="1"
                     android:gravity="center"
-                    android:textSize="50sp"/>
+                    android:textSize="40sp"/>
             </LinearLayout>
 
             <LinearLayout
                 android:orientation="vertical"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_weight="2">
+                android:layout_weight="1">
 
                 <LinearLayout
                     android:orientation="horizontal"
@@ -76,7 +78,7 @@
                         android:layout_weight="1"
                         android:gravity="center_vertical"
                         android:paddingLeft="10dp"
-                        android:textSize="50sp"/>
+                        android:textSize="40sp"/>
 
 
                 </LinearLayout>
@@ -103,7 +105,7 @@
                         android:layout_weight="1"
                         android:gravity="center_vertical"
                         android:paddingLeft="10dp"
-                        android:textSize="50sp"/>
+                        android:textSize="40sp"/>
                 </LinearLayout>
 
             </LinearLayout>
@@ -130,19 +132,18 @@
                     android:layout_weight="1">
 
                     <Button
-                        android:text="Oppt \nScore"
+                        android:text="Opp"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:id="@+id/btnOpptScore"
-                        android:textSize="6sp"
+                        android:textSize="7sp"
                         android:layout_weight="1" />
 
-                    <Button
-                        android:text="BACK"
+                    <ImageView
+                        android:src="@drawable/ic_undo_white_48dp"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:id="@+id/btnBack"
-                        android:textSize="7sp"
+                        android:id="@+id/btnImgBack"
                         android:layout_weight="1" />
                 </LinearLayout>
 
@@ -155,19 +156,18 @@
 
 
                     <Button
-                        android:text="You \nScore"
+                        android:text="You"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:id="@+id/btnYouScore"
-                        android:textSize="6sp"
+                        android:textSize="7sp"
                         android:layout_weight="1" />
 
-                    <Button
-                        android:text="Reset"
+                    <ImageView
+                        android:src="@drawable/ic_settings_white_48dp"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:id="@+id/btnReset"
-                        android:textSize="7sp"
+                        android:id="@+id/btnImgReset"
                         android:layout_weight="1" />
                 </LinearLayout>
             </LinearLayout>

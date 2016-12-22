@@ -1,17 +1,14 @@
 package com.seventhmoon.tennisumpire;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.wearable.activity.WearableActivity;
-import android.support.wearable.view.BoxInsetLayout;
+
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
-import android.widget.TextView;
-
-import java.util.ArrayList;
 
 
 public class SetupMain extends WearableActivity {
@@ -22,7 +19,6 @@ public class SetupMain extends WearableActivity {
     private Spinner tiebreakSpinner;
     private Spinner deuceSpinner;
     private Spinner serveSpinner;
-    private Button confirm;
 
     public ArrayAdapter<String> setAdapter;
     //public ArrayAdapter<String> gameAdapter;
@@ -35,6 +31,7 @@ public class SetupMain extends WearableActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.setup_menu);
 
+        Button confirm;
 
         setSpinner = (Spinner) findViewById(R.id.spinnerSets);
         //gameSpinner = (Spinner) findViewById(R.id.spinnerGames);
@@ -69,7 +66,7 @@ public class SetupMain extends WearableActivity {
         deuceAdapter = new ArrayAdapter<>(SetupMain.this, R.layout.myspinner, deuceList);
         deuceSpinner.setAdapter(deuceAdapter);
 
-        serveAdapter = new ArrayAdapter<String>(SetupMain.this, R.layout.myspinner, serveList);
+        serveAdapter = new ArrayAdapter<>(SetupMain.this, R.layout.myspinner, serveList);
         serveSpinner.setAdapter(serveAdapter);
 
         confirm.setOnClickListener(new View.OnClickListener() {
@@ -82,8 +79,18 @@ public class SetupMain extends WearableActivity {
                 intent.putExtra("SETUP_DEUCE", String.valueOf(deuceSpinner.getSelectedItemPosition()));
                 intent.putExtra("SETUP_SERVE", String.valueOf(serveSpinner.getSelectedItemPosition()));
                 startActivity(intent);
+                finish();
             }
         });
     }
 
+
+    @Override
+    protected void onDestroy() {
+        Log.d(TAG, "onDestroy");
+
+
+        super.onDestroy();
+
+    }
 }

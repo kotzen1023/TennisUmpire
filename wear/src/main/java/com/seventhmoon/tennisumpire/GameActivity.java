@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.wearable.activity.WearableActivity;
-import android.support.wearable.view.BoxInsetLayout;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -13,7 +12,6 @@ import android.widget.TextView;
 
 import com.seventhmoon.tennisumpire.Data.State;
 
-import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
@@ -21,8 +19,7 @@ import java.util.ArrayDeque;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Deque;
-import java.util.Locale;
-import java.util.Stack;
+
 import java.util.TimeZone;
 
 
@@ -41,11 +38,8 @@ public class GameActivity extends WearableActivity {
     private ImageView imgServeUp;
     private ImageView imgServeDown;
 
-    private TextView mClockView;
-    private Button btnYouScore;
-    private Button btnBack;
-    private Button btnOpptScore;
-    private Button btnReset;
+    //private TextView mClockView;
+
 
     private TextView textCurrentTime;
     private TextView textGameTime;
@@ -66,6 +60,13 @@ public class GameActivity extends WearableActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.game_layout);
 
+        Button btnYouScore;
+        ImageView btnImgBack;
+        Button btnOpptScore;
+        ImageView btnImgReset;
+
+        setAmbientEnabled();
+
         handler = new Handler();
 
         startTime = System.currentTimeMillis();
@@ -76,7 +77,6 @@ public class GameActivity extends WearableActivity {
         Intent intent = getIntent();
 
         set = intent.getStringExtra("SETUP_SET");
-        //game = intent.getStringExtra("SETUP_GAME");
         tiebreak = intent.getStringExtra("SETUP_TIEBREAK");
         deuce = intent.getStringExtra("SETUP_DEUCE");
         serve = intent.getStringExtra("SETUP_SERVE");
@@ -126,14 +126,15 @@ public class GameActivity extends WearableActivity {
 
         btnYouScore = (Button) findViewById(R.id.btnYouScore);
         btnOpptScore = (Button) findViewById(R.id.btnOpptScore);
-        btnBack = (Button) findViewById(R.id.btnBack);
-        btnReset = (Button) findViewById(R.id.btnReset);
+        btnImgBack = (ImageView) findViewById(R.id.btnImgBack);
+        btnImgReset = (ImageView) findViewById(R.id.btnImgReset);
 
-        btnBack.setOnClickListener(new View.OnClickListener() {
+        btnImgBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (stack.isEmpty()) {
                     Log.d(TAG, "stack is empty!");
+
                 } else {
                     byte current_set;
                     //stack.pop();
@@ -155,13 +156,14 @@ public class GameActivity extends WearableActivity {
 
                             if (!back_state.isInTiebreak()) { //not in tiebreak
                                 if (back_state.getSet_point_up(current_set) == 1) {
-                                    pointUp.setText("15");
+                                    pointUp.setText(String.valueOf(15));
                                 } else if (back_state.getSet_point_up(current_set) == 2) {
-                                    pointUp.setText("30");
+                                    pointUp.setText(String.valueOf(30));
                                 } else if (back_state.getSet_point_up(current_set) == 3) {
-                                    pointUp.setText("40");
+                                    pointUp.setText(String.valueOf(40));
                                 } else if (back_state.getSet_point_up(current_set) == 4) {
-                                    pointUp.setText("40A");
+                                    String msg = String.valueOf(40)+"A";
+                                    pointUp.setText(msg);
                                 } else {
                                     pointUp.setText("0");
                                 }
@@ -171,13 +173,14 @@ public class GameActivity extends WearableActivity {
 
                             if (!back_state.isInTiebreak()) { //not in tiebreak
                                 if (back_state.getSet_point_down(current_set) == 1) {
-                                    pointDown.setText("15");
+                                    pointDown.setText(String.valueOf(15));
                                 } else if (back_state.getSet_point_down(current_set) == 2) {
-                                    pointDown.setText("30");
+                                    pointDown.setText(String.valueOf(30));
                                 } else if (back_state.getSet_point_down(current_set) == 3) {
-                                    pointDown.setText("40");
+                                    pointDown.setText(String.valueOf(40));
                                 } else if (back_state.getSet_point_down(current_set) == 4) {
-                                    pointDown.setText("40A");
+                                    String msg = String.valueOf(40)+"A";
+                                    pointDown.setText(msg);
                                 } else {
                                     pointDown.setText("0");
                                 }
@@ -191,14 +194,23 @@ public class GameActivity extends WearableActivity {
                             Log.d(TAG, "In tiebreak : " + back_state.isInTiebreak());
                             Log.d(TAG, "Finish : " + back_state.isFinish());
 
-                            int set_limit = 0;
-                            if (set.equals("0")) {
-                                set_limit = 1;
-                            } else if (set.equals("1")) {
-                                set_limit = 3;
-                            } else if (set.equals("2")) {
-                                set_limit = 5;
+                            int set_limit;
+                            switch (set)
+                            {
+                                case "0":
+                                    set_limit = 1;
+                                    break;
+                                case "1":
+                                    set_limit = 3;
+                                    break;
+                                case "2":
+                                    set_limit = 5;
+                                    break;
+                                default:
+                                    set_limit = 1;
+                                    break;
                             }
+
 
                             for (int i = 1; i <= set_limit; i++) {
                                 Log.d(TAG, "================================");
@@ -220,6 +232,14 @@ public class GameActivity extends WearableActivity {
 
                             pointUp.setText("0");
                             pointDown.setText("0");
+
+                            if (serve.equals("0")) { //you server first
+                                imgServeUp.setVisibility(View.INVISIBLE);
+                                imgServeDown.setVisibility(View.VISIBLE);
+                            } else {
+                                imgServeUp.setVisibility(View.VISIBLE);
+                                imgServeDown.setVisibility(View.INVISIBLE);
+                            }
                         }
                     }
                 }
@@ -240,11 +260,15 @@ public class GameActivity extends WearableActivity {
             }
         });
 
-        btnReset.setOnClickListener(new View.OnClickListener() {
+        btnImgReset.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 time_use = 0;
                 stack.clear();
+                handler.removeCallbacks(updateTimer);
+
+                Intent intent = new Intent(GameActivity.this, SetupMain.class);
+                startActivity(intent);
                 finish();
             }
         });
@@ -285,19 +309,38 @@ public class GameActivity extends WearableActivity {
 
     }
 
+    @Override
+    protected void onDestroy() {
+        Log.d(TAG, "onDestroy");
+        time_use = 0;
+        stack.clear();
+        handler.removeCallbacks(updateTimer);
+
+        super.onDestroy();
+
+    }
+
     private void calculateScore(boolean you_score) {
         byte current_set = 0;
         State new_state=null;
         //load top state first
         State current_state = stack.peek();
 
-        int set_limit = 0;
-        if (set.equals("0")) {
-            set_limit = 1;
-        } else if (set.equals("1")) {
-            set_limit = 3;
-        } else if (set.equals("2")) {
-            set_limit = 5;
+        int set_limit;
+        switch (set)
+        {
+            case "0":
+                set_limit = 1;
+                break;
+            case "1":
+                set_limit = 3;
+                break;
+            case "2":
+                set_limit = 5;
+                break;
+            default:
+                set_limit = 1;
+                break;
         }
 
         if (current_state != null) {
@@ -321,220 +364,220 @@ public class GameActivity extends WearableActivity {
             Log.d(TAG, "Point : " + current_state.getSet_point_up(current_set) + " / " + current_state.getSet_point_down(current_set));
             Log.d(TAG, "tiebreak : " + current_state.getSet_tiebreak_point_up(current_set) + " / " + current_state.getSet_tiebreak_point_down(current_set));
             Log.d(TAG, "########## current state end ##########");
-        } else {
-            Log.d(TAG, "Stack is empty!");
-        }
 
-        if (current_state != null && current_state.isFinish()) {
-            Log.d(TAG, "*** Game is Over ***");
-            handler.removeCallbacks(updateTimer);
+            if (current_state.isFinish()) {
+                Log.d(TAG, "*** Game is Over ***");
+                handler.removeCallbacks(updateTimer);
 
-            Intent intent = new Intent(GameActivity.this, ResultActivity.class);
-            intent.putExtra("SET1_GAME_UP",   String.valueOf(current_state.getSet_game_up((byte)0x01)));
-            intent.putExtra("SET1_GAME_DOWN", String.valueOf(current_state.getSet_game_down((byte)0x01)));
-            intent.putExtra("SET2_GAME_UP",   String.valueOf(current_state.getSet_game_up((byte)0x02)));
-            intent.putExtra("SET2_GAME_DOWN", String.valueOf(current_state.getSet_game_down((byte)0x02)));
-            intent.putExtra("SET3_GAME_UP",   String.valueOf(current_state.getSet_game_up((byte)0x03)));
-            intent.putExtra("SET3_GAME_DOWN", String.valueOf(current_state.getSet_game_down((byte)0x03)));
-            intent.putExtra("SET4_GAME_UP",   String.valueOf(current_state.getSet_game_up((byte)0x04)));
-            intent.putExtra("SET4_GAME_DOWN", String.valueOf(current_state.getSet_game_down((byte)0x04)));
-            intent.putExtra("SET5_GAME_UP",   String.valueOf(current_state.getSet_game_up((byte)0x05)));
-            intent.putExtra("SET5_GAME_DOWN", String.valueOf(current_state.getSet_game_down((byte)0x05)));
+                Intent intent = new Intent(GameActivity.this, ResultActivity.class);
+                intent.putExtra("SET1_GAME_UP",   String.valueOf(current_state.getSet_game_up((byte)0x01)));
+                intent.putExtra("SET1_GAME_DOWN", String.valueOf(current_state.getSet_game_down((byte)0x01)));
+                intent.putExtra("SET2_GAME_UP",   String.valueOf(current_state.getSet_game_up((byte)0x02)));
+                intent.putExtra("SET2_GAME_DOWN", String.valueOf(current_state.getSet_game_down((byte)0x02)));
+                intent.putExtra("SET3_GAME_UP",   String.valueOf(current_state.getSet_game_up((byte)0x03)));
+                intent.putExtra("SET3_GAME_DOWN", String.valueOf(current_state.getSet_game_down((byte)0x03)));
+                intent.putExtra("SET4_GAME_UP",   String.valueOf(current_state.getSet_game_up((byte)0x04)));
+                intent.putExtra("SET4_GAME_DOWN", String.valueOf(current_state.getSet_game_down((byte)0x04)));
+                intent.putExtra("SET5_GAME_UP",   String.valueOf(current_state.getSet_game_up((byte)0x05)));
+                intent.putExtra("SET5_GAME_DOWN", String.valueOf(current_state.getSet_game_down((byte)0x05)));
 
-            intent.putExtra("SET1_TIEBREAK_UP",   String.valueOf(current_state.getSet_tiebreak_point_up((byte)0x01)));
-            intent.putExtra("SET1_TIEBREAK_DOWN", String.valueOf(current_state.getSet_tiebreak_point_down((byte)0x01)));
-            intent.putExtra("SET2_TIEBREAK_UP",   String.valueOf(current_state.getSet_tiebreak_point_up((byte)0x02)));
-            intent.putExtra("SET2_TIEBREAK_DOWN", String.valueOf(current_state.getSet_tiebreak_point_down((byte)0x02)));
-            intent.putExtra("SET3_TIEBREAK_UP",   String.valueOf(current_state.getSet_tiebreak_point_up((byte)0x03)));
-            intent.putExtra("SET3_TIEBREAK_DOWN", String.valueOf(current_state.getSet_tiebreak_point_down((byte)0x03)));
-            intent.putExtra("SET4_TIEBREAK_UP",   String.valueOf(current_state.getSet_tiebreak_point_up((byte)0x04)));
-            intent.putExtra("SET4_TIEBREAK_DOWN", String.valueOf(current_state.getSet_tiebreak_point_down((byte)0x04)));
-            intent.putExtra("SET5_TIEBREAK_UP",   String.valueOf(current_state.getSet_tiebreak_point_up((byte)0x05)));
-            intent.putExtra("SET5_TIEBREAK_DOWN", String.valueOf(current_state.getSet_tiebreak_point_down((byte)0x05)));
+                intent.putExtra("SET1_TIEBREAK_UP",   String.valueOf(current_state.getSet_tiebreak_point_up((byte)0x01)));
+                intent.putExtra("SET1_TIEBREAK_DOWN", String.valueOf(current_state.getSet_tiebreak_point_down((byte)0x01)));
+                intent.putExtra("SET2_TIEBREAK_UP",   String.valueOf(current_state.getSet_tiebreak_point_up((byte)0x02)));
+                intent.putExtra("SET2_TIEBREAK_DOWN", String.valueOf(current_state.getSet_tiebreak_point_down((byte)0x02)));
+                intent.putExtra("SET3_TIEBREAK_UP",   String.valueOf(current_state.getSet_tiebreak_point_up((byte)0x03)));
+                intent.putExtra("SET3_TIEBREAK_DOWN", String.valueOf(current_state.getSet_tiebreak_point_down((byte)0x03)));
+                intent.putExtra("SET4_TIEBREAK_UP",   String.valueOf(current_state.getSet_tiebreak_point_up((byte)0x04)));
+                intent.putExtra("SET4_TIEBREAK_DOWN", String.valueOf(current_state.getSet_tiebreak_point_down((byte)0x04)));
+                intent.putExtra("SET5_TIEBREAK_UP",   String.valueOf(current_state.getSet_tiebreak_point_up((byte)0x05)));
+                intent.putExtra("SET5_TIEBREAK_DOWN", String.valueOf(current_state.getSet_tiebreak_point_down((byte)0x05)));
 
-            intent.putExtra("GAME_DURATION", String.valueOf(String.valueOf(time_use)));
+                intent.putExtra("GAME_DURATION", String.valueOf(String.valueOf(time_use)));
 
 
-            startActivity(intent);
-        } else {
-            Log.d(TAG, "*** Game is running ***");
-            if (you_score) {
-                Log.d(TAG, "=== I score start ===");
+                startActivity(intent);
+            } else { //not finish
+                Log.d(TAG, "*** Game is running ***");
+                if (you_score) {
+                    Log.d(TAG, "=== I score start ===");
 
-                if (stack.isEmpty()) { //the state stack is empty
-                    new_state = new State();
-                    Log.d(TAG, "==>[Stack empty]");
-                    if (serve.equals("0"))
-                        new_state.setServe(true);
-                    else
-                        new_state.setServe(false);
-
-                    //set current set = 1
-                    new_state.setCurrent_set((byte) 0x01);
-
-                    new_state.setSet_point_down((byte) 0x01, (byte) 0x01);
-                    //new_state.setSet_1_point_down((byte)0x01);
-
-
-                    //Log.e(TAG, "get_set_1_point_down = "+new_state.getSet_1_point_down()+", isServe ? "+ (new_state.isServe() ? "YES" : "NO"));
-                } else {
-                    Log.d(TAG, "==>[Stack not empty]");
-                    if (current_state.isFinish()) {
-                        Log.d(TAG, "**** Game Finish ****");
-                    } else {
+                    if (stack.isEmpty()) { //the state stack is empty
                         new_state = new State();
-                        //new_state = stack.peek();
-                        // copy previous state;
-                        new_state.setCurrent_set(current_state.getCurrent_set());
-                        new_state.setServe(current_state.isServe());
-                        new_state.setInTiebreak(current_state.isInTiebreak());
-                        new_state.setFinish(current_state.isFinish());
-                        new_state.setSetsUp(current_state.getSetsUp());
-                        new_state.setSetsDown(current_state.getSetsDown());
+                        Log.d(TAG, "==>[Stack empty]");
+                        if (serve.equals("0"))
+                            new_state.setServe(true);
+                        else
+                            new_state.setServe(false);
 
-                        for (byte i=1; i<=set_limit; i++) {
-                            new_state.setSet_game_up(i, current_state.getSet_game_up(i));
-                            new_state.setSet_game_down(i, current_state.getSet_game_down(i));
-                            new_state.setSet_point_up(i, current_state.getSet_point_up(i));
-                            new_state.setSet_point_down(i, current_state.getSet_point_down(i));
-                            new_state.setSet_tiebreak_point_up(i, current_state.getSet_tiebreak_point_up(i));
-                            new_state.setSet_tiebreak_point_down(i, current_state.getSet_tiebreak_point_down(i));
-                        }
+                        //set current set = 1
+                        new_state.setCurrent_set((byte) 0x01);
+
+                        new_state.setSet_point_down((byte) 0x01, (byte) 0x01);
+                        //new_state.setSet_1_point_down((byte)0x01);
 
 
-                        //you score!
-                        byte point = current_state.getSet_point_down(current_set);
-                        Log.d(TAG, "Your point " + point + " change to " + (++point));
-                        new_state.setSet_point_down(current_set, point);
-
-                        checkPoint(new_state);
-
-                        checkGames(new_state);
-                    }
-                }
-
-                Log.d(TAG, "=== I score end ===");
-            } else {
-                Log.d(TAG, "=== Oppt score start ===");
-                if (stack.isEmpty()) { //the state stack is empty
-                    new_state = new State();
-                    Log.d(TAG, "==>[Stack empty]");
-                    if (serve.equals("0"))
-                        new_state.setServe(true);
-                    else
-                        new_state.setServe(false);
-
-                    //set current set = 1
-                    new_state.setCurrent_set((byte) 0x01);
-
-                    new_state.setSet_point_up((byte) 0x01, (byte) 0x01);
-
-                    //Log.e(TAG, "get_set_1_point_up = "+new_state.getSet_1_point_up()+", isServe ? "+ (new_state.isServe() ? "YES" : "NO"));
-
-                } else {
-                    Log.d(TAG, "==>[Stack not empty]");
-                    if (current_state.isFinish()) {
-                        Log.d(TAG, "**** Game Finish ****");
+                        //Log.e(TAG, "get_set_1_point_down = "+new_state.getSet_1_point_down()+", isServe ? "+ (new_state.isServe() ? "YES" : "NO"));
                     } else {
-                        new_state = new State();
-                        //new_state = stack.peek();
-                        // copy previous state;
-                        new_state.setCurrent_set(current_state.getCurrent_set());
-                        new_state.setServe(current_state.isServe());
-                        new_state.setInTiebreak(current_state.isInTiebreak());
-                        new_state.setFinish(current_state.isFinish());
-                        new_state.setSetsUp(current_state.getSetsUp());
-                        new_state.setSetsDown(current_state.getSetsDown());
+                        Log.d(TAG, "==>[Stack not empty]");
 
-                        for (byte i=1; i<=set_limit; i++) {
-                            new_state.setSet_game_up(i, current_state.getSet_game_up(i));
-                            new_state.setSet_game_down(i, current_state.getSet_game_down(i));
-                            new_state.setSet_point_up(i, current_state.getSet_point_up(i));
-                            new_state.setSet_point_down(i, current_state.getSet_point_down(i));
-                            new_state.setSet_tiebreak_point_up(i, current_state.getSet_tiebreak_point_up(i));
-                            new_state.setSet_tiebreak_point_down(i, current_state.getSet_tiebreak_point_down(i));
+                        if (current_state.isFinish()) {
+                            Log.d(TAG, "**** Game Finish ****");
+                        } else {
+                            new_state = new State();
+                            //new_state = stack.peek();
+                            // copy previous state;
+                            new_state.setCurrent_set(current_state.getCurrent_set());
+                            new_state.setServe(current_state.isServe());
+                            new_state.setInTiebreak(current_state.isInTiebreak());
+                            new_state.setFinish(current_state.isFinish());
+                            new_state.setSetsUp(current_state.getSetsUp());
+                            new_state.setSetsDown(current_state.getSetsDown());
+
+                            for (byte i=1; i<=set_limit; i++) {
+                                new_state.setSet_game_up(i, current_state.getSet_game_up(i));
+                                new_state.setSet_game_down(i, current_state.getSet_game_down(i));
+                                new_state.setSet_point_up(i, current_state.getSet_point_up(i));
+                                new_state.setSet_point_down(i, current_state.getSet_point_down(i));
+                                new_state.setSet_tiebreak_point_up(i, current_state.getSet_tiebreak_point_up(i));
+                                new_state.setSet_tiebreak_point_down(i, current_state.getSet_tiebreak_point_down(i));
+                            }
+
+
+                            //you score!
+                            byte point = current_state.getSet_point_down(current_set);
+                            Log.d(TAG, "Your point " + point + " change to " + (++point));
+                            new_state.setSet_point_down(current_set, point);
+
+                            checkPoint(new_state);
+
+                            checkGames(new_state);
                         }
-
-                        //oppt score!
-                        byte point = current_state.getSet_point_up(current_set);
-                        Log.d(TAG, "Opponent point " + point + " change to " + (++point));
-                        new_state.setSet_point_up(current_set, point);
-
-                        checkPoint(new_state);
-
-                        checkGames(new_state);
                     }
-                }
-                Log.d(TAG, "=== Oppt score end ===");
-            }
 
-            Log.d(TAG, "########## new state start ##########");
-            Log.d(TAG, "current set : " + new_state.getCurrent_set());
-            Log.d(TAG, "Serve : " + new_state.isServe());
-            Log.d(TAG, "In tiebreak : " + new_state.isInTiebreak());
-            Log.d(TAG, "Finish : " + new_state.isFinish());
-
-            for (int i = 1; i <= set_limit; i++) {
-                Log.d(TAG, "================================");
-                Log.d(TAG, "[set " + i + "]");
-                Log.d(TAG, "[Game : " + new_state.getSet_game_up((byte) i) + " / " + new_state.getSet_game_down((byte) i) + "]");
-                Log.d(TAG, "[Point : " + new_state.getSet_point_up((byte) i) + " / " + new_state.getSet_point_down((byte) i) + "]");
-                Log.d(TAG, "[tiebreak : " + new_state.getSet_tiebreak_point_up((byte) i) + " / " + new_state.getSet_tiebreak_point_down((byte) i) + "]");
-            }
-
-
-            Log.d(TAG, "########## new state end ##########");
-
-
-            //then look up top state
-            //State new_current_state = stack.peek();
-            current_set = new_state.getCurrent_set();
-
-            gameUp.setText(String.valueOf(new_state.getSet_game_up(current_set)));
-            gameDown.setText(String.valueOf(new_state.getSet_game_down(current_set)));
-
-            if (new_state.isServe()) {
-                imgServeUp.setVisibility(View.INVISIBLE);
-                imgServeDown.setVisibility(View.VISIBLE);
-            } else {
-                imgServeUp.setVisibility(View.VISIBLE);
-                imgServeDown.setVisibility(View.INVISIBLE);
-            }
-
-            if (!new_state.isInTiebreak()) { //not in tiebreak
-                if (new_state.getSet_point_up(current_set) == 1) {
-                    pointUp.setText("15");
-                } else if (new_state.getSet_point_up(current_set) == 2) {
-                    pointUp.setText("30");
-                } else if (new_state.getSet_point_up(current_set) == 3) {
-                    pointUp.setText("40");
-                } else if (new_state.getSet_point_up(current_set) == 4) {
-                    pointUp.setText("40A");
+                    Log.d(TAG, "=== I score end ===");
                 } else {
-                    pointUp.setText("0");
-                }
-            } else { //tie break;
-                pointUp.setText(String.valueOf(new_state.getSet_point_up(current_set)));
-            }
+                    Log.d(TAG, "=== Oppt score start ===");
+                    if (stack.isEmpty()) { //the state stack is empty
+                        new_state = new State();
+                        Log.d(TAG, "==>[Stack empty]");
+                        if (serve.equals("0"))
+                            new_state.setServe(true);
+                        else
+                            new_state.setServe(false);
 
-            if (!new_state.isInTiebreak()) { //not in tiebreak
-                if (new_state.getSet_point_down(current_set) == 1) {
-                    pointDown.setText("15");
-                } else if (new_state.getSet_point_down(current_set) == 2) {
-                    pointDown.setText("30");
-                } else if (new_state.getSet_point_down(current_set) == 3) {
-                    pointDown.setText("40");
-                } else if (new_state.getSet_point_down(current_set) == 4) {
-                    pointDown.setText("40A");
-                } else {
-                    pointDown.setText("0");
-                }
-            } else {
-                pointDown.setText(String.valueOf(new_state.getSet_point_down(current_set)));
-            }
+                        //set current set = 1
+                        new_state.setCurrent_set((byte) 0x01);
 
-            //push into stack
-            stack.push(new_state);
+                        new_state.setSet_point_up((byte) 0x01, (byte) 0x01);
+
+                        //Log.e(TAG, "get_set_1_point_up = "+new_state.getSet_1_point_up()+", isServe ? "+ (new_state.isServe() ? "YES" : "NO"));
+
+                    } else {
+                        Log.d(TAG, "==>[Stack not empty]");
+                        if (current_state.isFinish()) {
+                            Log.d(TAG, "**** Game Finish ****");
+                        } else {
+                            new_state = new State();
+                            //new_state = stack.peek();
+                            // copy previous state;
+                            new_state.setCurrent_set(current_state.getCurrent_set());
+                            new_state.setServe(current_state.isServe());
+                            new_state.setInTiebreak(current_state.isInTiebreak());
+                            new_state.setFinish(current_state.isFinish());
+                            new_state.setSetsUp(current_state.getSetsUp());
+                            new_state.setSetsDown(current_state.getSetsDown());
+
+                            for (byte i=1; i<=set_limit; i++) {
+                                new_state.setSet_game_up(i, current_state.getSet_game_up(i));
+                                new_state.setSet_game_down(i, current_state.getSet_game_down(i));
+                                new_state.setSet_point_up(i, current_state.getSet_point_up(i));
+                                new_state.setSet_point_down(i, current_state.getSet_point_down(i));
+                                new_state.setSet_tiebreak_point_up(i, current_state.getSet_tiebreak_point_up(i));
+                                new_state.setSet_tiebreak_point_down(i, current_state.getSet_tiebreak_point_down(i));
+                            }
+
+                            //oppt score!
+                            byte point = current_state.getSet_point_up(current_set);
+                            Log.d(TAG, "Opponent point " + point + " change to " + (++point));
+                            new_state.setSet_point_up(current_set, point);
+
+                            checkPoint(new_state);
+
+                            checkGames(new_state);
+                        }
+                    }
+                    Log.d(TAG, "=== Oppt score end ===");
+                }
+
+                if (new_state != null) {
+
+                    Log.d(TAG, "########## new state start ##########");
+                    Log.d(TAG, "current set : " + new_state.getCurrent_set());
+                    Log.d(TAG, "Serve : " + new_state.isServe());
+                    Log.d(TAG, "In tiebreak : " + new_state.isInTiebreak());
+                    Log.d(TAG, "Finish : " + new_state.isFinish());
+
+                    for (int i = 1; i <= set_limit; i++) {
+                        Log.d(TAG, "================================");
+                        Log.d(TAG, "[set " + i + "]");
+                        Log.d(TAG, "[Game : " + new_state.getSet_game_up((byte) i) + " / " + new_state.getSet_game_down((byte) i) + "]");
+                        Log.d(TAG, "[Point : " + new_state.getSet_point_up((byte) i) + " / " + new_state.getSet_point_down((byte) i) + "]");
+                        Log.d(TAG, "[tiebreak : " + new_state.getSet_tiebreak_point_up((byte) i) + " / " + new_state.getSet_tiebreak_point_down((byte) i) + "]");
+                    }
+
+                    Log.d(TAG, "########## new state end ##########");
+
+                    //then look up top state
+                    //State new_current_state = stack.peek();
+                    current_set = new_state.getCurrent_set();
+
+                    gameUp.setText(String.valueOf(new_state.getSet_game_up(current_set)));
+                    gameDown.setText(String.valueOf(new_state.getSet_game_down(current_set)));
+
+                    if (new_state.isServe()) {
+                        imgServeUp.setVisibility(View.INVISIBLE);
+                        imgServeDown.setVisibility(View.VISIBLE);
+                    } else {
+                        imgServeUp.setVisibility(View.VISIBLE);
+                        imgServeDown.setVisibility(View.INVISIBLE);
+                    }
+
+                    if (!new_state.isInTiebreak()) { //not in tiebreak
+                        if (new_state.getSet_point_up(current_set) == 1) {
+                            pointUp.setText(String.valueOf(15));
+                        } else if (new_state.getSet_point_up(current_set) == 2) {
+                            pointUp.setText(String.valueOf(30));
+                        } else if (new_state.getSet_point_up(current_set) == 3) {
+                            pointUp.setText(String.valueOf(40));
+                        } else if (new_state.getSet_point_up(current_set) == 4) {
+                            String msg = String.valueOf(40)+"A";
+                            pointUp.setText(msg);
+                        } else {
+                            pointUp.setText("0");
+                        }
+                    } else { //tie break;
+                        pointUp.setText(String.valueOf(new_state.getSet_point_up(current_set)));
+                    }
+
+                    if (!new_state.isInTiebreak()) { //not in tiebreak
+                        if (new_state.getSet_point_down(current_set) == 1) {
+                            pointDown.setText(String.valueOf(15));
+                        } else if (new_state.getSet_point_down(current_set) == 2) {
+                            pointDown.setText(String.valueOf(30));
+                        } else if (new_state.getSet_point_down(current_set) == 3) {
+                            pointDown.setText(String.valueOf(40));
+                        } else if (new_state.getSet_point_down(current_set) == 4) {
+                            String msg = String.valueOf(40)+"A";
+                            pointDown.setText(msg);
+                        } else {
+                            pointDown.setText("0");
+                        }
+                    } else {
+                        pointDown.setText(String.valueOf(new_state.getSet_point_down(current_set)));
+                    }
+
+                    //push into stack
+                    stack.push(new_state);
 
             /*Log.d(TAG, "@@@@@@ stack @@@@@@");
             for (State s : stack) {
@@ -553,6 +596,131 @@ public class GameActivity extends WearableActivity {
                 Log.d(TAG, "================================");
             }
             Log.d(TAG, "@@@@@@ stack @@@@@@");*/
+                }
+
+
+
+
+
+
+            }
+        } else {
+            Log.d(TAG, "Stack is empty!");
+
+            Log.d(TAG, "*** Game is running ***");
+            if (you_score) {
+                Log.d(TAG, "=== I score start ===");
+
+                //if (stack.isEmpty()) { //the state stack is empty
+                    new_state = new State();
+                    Log.d(TAG, "==>[Stack empty]");
+                    if (serve.equals("0"))
+                        new_state.setServe(true);
+                    else
+                        new_state.setServe(false);
+
+                    //set current set = 1
+                    new_state.setCurrent_set((byte) 0x01);
+
+                    new_state.setSet_point_down((byte) 0x01, (byte) 0x01);
+                    //new_state.setSet_1_point_down((byte)0x01);
+
+
+                    //Log.e(TAG, "get_set_1_point_down = "+new_state.getSet_1_point_down()+", isServe ? "+ (new_state.isServe() ? "YES" : "NO"));
+                //}
+
+                Log.d(TAG, "=== I score end ===");
+            } else {
+                Log.d(TAG, "=== Oppt score start ===");
+                //if (stack.isEmpty()) { //the state stack is empty
+                    new_state = new State();
+                    Log.d(TAG, "==>[Stack empty]");
+                    if (serve.equals("0"))
+                        new_state.setServe(true);
+                    else
+                        new_state.setServe(false);
+
+                    //set current set = 1
+                    new_state.setCurrent_set((byte) 0x01);
+
+                    new_state.setSet_point_up((byte) 0x01, (byte) 0x01);
+
+                    //Log.e(TAG, "get_set_1_point_up = "+new_state.getSet_1_point_up()+", isServe ? "+ (new_state.isServe() ? "YES" : "NO"));
+
+                //}
+                Log.d(TAG, "=== Oppt score end ===");
+            }
+
+            if (new_state != null) {
+
+                Log.d(TAG, "########## new state start ##########");
+                Log.d(TAG, "current set : " + new_state.getCurrent_set());
+                Log.d(TAG, "Serve : " + new_state.isServe());
+                Log.d(TAG, "In tiebreak : " + new_state.isInTiebreak());
+                Log.d(TAG, "Finish : " + new_state.isFinish());
+
+                for (int i = 1; i <= set_limit; i++) {
+                    Log.d(TAG, "================================");
+                    Log.d(TAG, "[set " + i + "]");
+                    Log.d(TAG, "[Game : " + new_state.getSet_game_up((byte) i) + " / " + new_state.getSet_game_down((byte) i) + "]");
+                    Log.d(TAG, "[Point : " + new_state.getSet_point_up((byte) i) + " / " + new_state.getSet_point_down((byte) i) + "]");
+                    Log.d(TAG, "[tiebreak : " + new_state.getSet_tiebreak_point_up((byte) i) + " / " + new_state.getSet_tiebreak_point_down((byte) i) + "]");
+                }
+
+                Log.d(TAG, "########## new state end ##########");
+
+                //then look up top state
+                //State new_current_state = stack.peek();
+                current_set = new_state.getCurrent_set();
+
+                gameUp.setText(String.valueOf(new_state.getSet_game_up(current_set)));
+                gameDown.setText(String.valueOf(new_state.getSet_game_down(current_set)));
+
+                if (new_state.isServe()) {
+                    imgServeUp.setVisibility(View.INVISIBLE);
+                    imgServeDown.setVisibility(View.VISIBLE);
+                } else {
+                    imgServeUp.setVisibility(View.VISIBLE);
+                    imgServeDown.setVisibility(View.INVISIBLE);
+                }
+
+                if (!new_state.isInTiebreak()) { //not in tiebreak
+                    if (new_state.getSet_point_up(current_set) == 1) {
+                        pointUp.setText(String.valueOf(15));
+                    } else if (new_state.getSet_point_up(current_set) == 2) {
+                        pointUp.setText(String.valueOf(30));
+                    } else if (new_state.getSet_point_up(current_set) == 3) {
+                        pointUp.setText(String.valueOf(40));
+                    } else if (new_state.getSet_point_up(current_set) == 4) {
+                        String msg = String.valueOf(40)+"A";
+                        pointUp.setText(msg);
+                    } else {
+                        pointUp.setText("0");
+                    }
+                } else { //tie break;
+                    pointUp.setText(String.valueOf(new_state.getSet_point_up(current_set)));
+                }
+
+                if (!new_state.isInTiebreak()) { //not in tiebreak
+                    if (new_state.getSet_point_down(current_set) == 1) {
+                        pointDown.setText(String.valueOf(15));
+                    } else if (new_state.getSet_point_down(current_set) == 2) {
+                        pointDown.setText(String.valueOf(30));
+                    } else if (new_state.getSet_point_down(current_set) == 3) {
+                        pointDown.setText(String.valueOf(40));
+                    } else if (new_state.getSet_point_down(current_set) == 4) {
+                        String msg = String.valueOf(40)+"A";
+                        pointDown.setText(msg);
+                    } else {
+                        pointDown.setText("0");
+                    }
+                } else {
+                    pointDown.setText(String.valueOf(new_state.getSet_point_down(current_set)));
+                }
+
+                //push into stack
+                stack.push(new_state);
+            }
         }
     }
 
@@ -863,25 +1031,37 @@ public class GameActivity extends WearableActivity {
         byte current_set = new_state.getCurrent_set();
         byte setsWinUp = new_state.getSetsUp();
         byte setsWinDown = new_state.getSetsDown();
-        if (set.equals("0")) { // 1 set
-            if (setsWinUp == 1 || setsWinDown == 1) {
-                new_state.setFinish(true);
-            }
-        } else if (set.equals("1")) { // three set
-            if (setsWinUp == 2 || setsWinDown == 2) {
-                new_state.setFinish(true);
-            } else { // new set
-                current_set++;
-                new_state.setCurrent_set(current_set);
-            }
-        } else if (set.equals("2")) { // five set
-            if (setsWinUp == 3 || setsWinDown == 3) {
-                new_state.setFinish(true);
-            } else { // new set
-                current_set++;
-                new_state.setCurrent_set(current_set);
-            }
+
+        switch (set) {
+            case "0":
+                if (setsWinUp == 1 || setsWinDown == 1) {
+                    new_state.setFinish(true);
+                }
+                break;
+            case "1":
+                if (setsWinUp == 2 || setsWinDown == 2) {
+                    new_state.setFinish(true);
+                } else { // new set
+                    current_set++;
+                    new_state.setCurrent_set(current_set);
+                }
+                break;
+            case "2":
+                if (setsWinUp == 3 || setsWinDown == 3) {
+                    new_state.setFinish(true);
+                } else { // new set
+                    current_set++;
+                    new_state.setCurrent_set(current_set);
+                }
+                break;
+            default:
+                if (setsWinUp == 1 || setsWinDown == 1) {
+                    new_state.setFinish(true);
+                }
+                break;
         }
+
+
 
         Log.d(TAG, "[Check sets End]");
     }
@@ -900,6 +1080,8 @@ public class GameActivity extends WearableActivity {
             handler.postDelayed(this, 1000);
             time_use++;
 
+            Log.d(TAG, "time_use = "+time_use);
+
             Calendar cal = Calendar.getInstance();
             TimeZone tz = cal.getTimeZone();
             SimpleDateFormat sdf = new SimpleDateFormat("hh:mm");
@@ -907,9 +1089,10 @@ public class GameActivity extends WearableActivity {
             Date netDate = new Date(System.currentTimeMillis());
             //Date gameDate = new Date(spentTime);
             Long hour = (time_use)/3600;
-            Long minius = (time_use)%3600/60;
+            Long min = (time_use)%3600/60;
+            Long sec = (time_use)%60;
             textCurrentTime.setText(sdf.format(netDate));
-            textGameTime.setText(f.format(hour)+":"+f.format(minius));
+            textGameTime.setText(f.format(hour)+":"+f.format(min)+":"+f.format(sec));
             //textGameTime.setText(sdf.format(gameDate));
         }
     };

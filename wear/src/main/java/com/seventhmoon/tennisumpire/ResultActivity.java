@@ -14,29 +14,7 @@ import java.text.NumberFormat;
 public class ResultActivity extends WearableActivity {
     private static final String TAG = ResultActivity.class.getName();
 
-    private TextView textViewSet1Up;
-    private TextView textViewSet1Down;
-    private TextView textViewSet2Up;
-    private TextView textViewSet2Down;
-    private TextView textViewSet3Up;
-    private TextView textViewSet3Down;
-    private TextView textViewSet4Up;
-    private TextView textViewSet4Down;
-    private TextView textViewSet5Up;
-    private TextView textViewSet5Down;
-    private TextView textViewSet1TieBreakUp;
-    private TextView textViewSet1TieBreakDown;
-    private TextView textViewSet2TieBreakUp;
-    private TextView textViewSet2TieBreakDown;
-    private TextView textViewSet3TieBreakUp;
-    private TextView textViewSet3TieBreakDown;
-    private TextView textViewSet4TieBreakUp;
-    private TextView textViewSet4TieBreakDown;
-    private TextView textViewSet5TieBreakUp;
-    private TextView textViewSet5TieBreakDown;
-    private TextView textViewDuration;
 
-    private Button btnOK;
 
 
 
@@ -44,6 +22,30 @@ public class ResultActivity extends WearableActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.result);
+
+        TextView textViewSet1Up;
+        TextView textViewSet1Down;
+        TextView textViewSet2Up;
+        TextView textViewSet2Down;
+        TextView textViewSet3Up;
+        TextView textViewSet3Down;
+        TextView textViewSet4Up;
+        TextView textViewSet4Down;
+        TextView textViewSet5Up;
+        TextView textViewSet5Down;
+        TextView textViewSet1TieBreakUp;
+        TextView textViewSet1TieBreakDown;
+        TextView textViewSet2TieBreakUp;
+        TextView textViewSet2TieBreakDown;
+        TextView textViewSet3TieBreakUp;
+        TextView textViewSet3TieBreakDown;
+        TextView textViewSet4TieBreakUp;
+        TextView textViewSet4TieBreakDown;
+        TextView textViewSet5TieBreakUp;
+        TextView textViewSet5TieBreakDown;
+        TextView textViewDuration;
+
+        Button btnOK;
 
         Intent intent = getIntent();
 
@@ -165,17 +167,18 @@ public class ResultActivity extends WearableActivity {
         if (set5_tiebreak_up.equals("0") && set5_tiebreak_down.equals("0"))
             Log.d(TAG, "5 Don't care");
         else {
-            textViewSet3TieBreakUp.setText(set5_tiebreak_up);
-            textViewSet3TieBreakDown.setText(set5_tiebreak_down);
-            textViewSet3TieBreakUp.setVisibility(View.VISIBLE);
-            textViewSet3TieBreakDown.setVisibility(View.VISIBLE);
+            textViewSet5TieBreakUp.setText(set5_tiebreak_up);
+            textViewSet5TieBreakDown.setText(set5_tiebreak_down);
+            textViewSet5TieBreakUp.setVisibility(View.VISIBLE);
+            textViewSet5TieBreakDown.setVisibility(View.VISIBLE);
         }
 
         NumberFormat f = new DecimalFormat("00");
         Long hour = (Long.valueOf(duration))/3600;
-        Long minius = (Long.valueOf(duration))%3600/60;
+        Long min = (Long.valueOf(duration))%3600/60;
+        Long sec = (Long.valueOf(duration))%60;
 
-        textViewDuration.setText(f.format(hour)+":"+f.format(minius));
+        textViewDuration.setText(f.format(hour)+":"+f.format(min)+":"+f.format(sec));
 
         btnOK = (Button) findViewById(R.id.btnResultOk);
 
