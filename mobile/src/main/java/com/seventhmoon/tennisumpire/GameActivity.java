@@ -1,29 +1,36 @@
 package com.seventhmoon.tennisumpire;
 
+
+
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.wearable.activity.WearableActivity;
+
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.seventhmoon.tennisumpire.Data.State;
+
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayDeque;
+
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Deque;
-
 import java.util.TimeZone;
 
 
-public class GameActivity extends WearableActivity {
+public class GameActivity extends AppCompatActivity{
     private static final String TAG = GameActivity.class.getName();
 
     //private static final SimpleDateFormat AMBIENT_DATE_FORMAT =
@@ -37,6 +44,9 @@ public class GameActivity extends WearableActivity {
     private TextView pointDown;
     private ImageView imgServeUp;
     private ImageView imgServeDown;
+    private LinearLayout setLayout;
+    private TextView setUp;
+    private TextView setDown;
 
     //private TextView mClockView;
 
@@ -61,11 +71,9 @@ public class GameActivity extends WearableActivity {
         setContentView(R.layout.game_layout);
 
         Button btnYouScore;
-        ImageView btnImgBack;
+        Button btnBack;
         Button btnOpptScore;
-        ImageView btnImgReset;
-
-        setAmbientEnabled();
+        Button btnReset;
 
         handler = new Handler();
 
@@ -100,6 +108,10 @@ public class GameActivity extends WearableActivity {
         textCurrentTime = (TextView) findViewById(R.id.currentTime);
         textGameTime = (TextView) findViewById(R.id.gameTime);
 
+        setLayout = (LinearLayout) findViewById(R.id.setLayout);
+        setUp = (TextView) findViewById(R.id.textViewSetUp);
+        setDown = (TextView) findViewById(R.id.textViewSetDown);
+
         //init score board
         gameUp.setText("0");
         gameDown.setText("0");
@@ -116,14 +128,19 @@ public class GameActivity extends WearableActivity {
 
 
 
+
+
+
+
+
         //mClockView = (TextView) findViewById(R.id.clock);
 
         btnYouScore = (Button) findViewById(R.id.btnYouScore);
         btnOpptScore = (Button) findViewById(R.id.btnOpptScore);
-        btnImgBack = (ImageView) findViewById(R.id.btnImgBack);
-        btnImgReset = (ImageView) findViewById(R.id.btnImgReset);
+        btnBack = (Button) findViewById(R.id.btnBack);
+        btnReset = (Button) findViewById(R.id.btnReset);
 
-        btnImgBack.setOnClickListener(new View.OnClickListener() {
+        btnBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (stack.isEmpty()) {
@@ -136,6 +153,16 @@ public class GameActivity extends WearableActivity {
                         State back_state = stack.peek();
                         if (back_state != null) {
                             current_set = back_state.getCurrent_set();
+
+                            if (back_state.getSetsUp() > 0 || back_state.getSetsDown() > 0) {
+                                setLayout.setVisibility(View.VISIBLE);
+                                setUp.setText(String.valueOf(back_state.getSetsUp()));
+                                setDown.setText(String.valueOf(back_state.getSetsDown()));
+                            } else {
+                                setLayout.setVisibility(View.GONE);
+                                setUp.setText("0");
+                                setDown.setText("0");
+                            }
 
                             gameUp.setText(String.valueOf(back_state.getSet_game_up(current_set)));
                             gameDown.setText(String.valueOf(back_state.getSet_game_down(current_set)));
@@ -254,7 +281,7 @@ public class GameActivity extends WearableActivity {
             }
         });
 
-        btnImgReset.setOnClickListener(new View.OnClickListener() {
+        btnReset.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 time_use = 0;
@@ -268,40 +295,7 @@ public class GameActivity extends WearableActivity {
         });
     }
 
-    @Override
-    public void onEnterAmbient(Bundle ambientDetails) {
-        super.onEnterAmbient(ambientDetails);
-        updateDisplay();
-    }
 
-    @Override
-    public void onUpdateAmbient() {
-        super.onUpdateAmbient();
-        updateDisplay();
-    }
-
-    @Override
-    public void onExitAmbient() {
-        updateDisplay();
-        super.onExitAmbient();
-    }
-
-    private void updateDisplay() {
-        /*if (isAmbient()) {
-            mContainerView.setBackgroundColor(getResources().getColor(android.R.color.black));
-            //mTextView.setTextColor(getResources().getColor(android.R.color.white));
-            mClockView.setTextColor(getResources().getColor(android.R.color.black));
-            mClockView.setVisibility(View.VISIBLE);
-
-            //mClockView.setText(AMBIENT_DATE_FORMAT.format(new Date()));
-        } else {
-            mContainerView.setBackground(null);
-            mClockView.setTextColor(getResources().getColor(android.R.color.black));
-            mClockView.setVisibility(View.GONE);
-        }*/
-
-
-    }
 
     @Override
     protected void onDestroy() {
@@ -318,7 +312,7 @@ public class GameActivity extends WearableActivity {
         byte current_set = 0;
         State new_state=null;
         //load top state first
-        State current_state = stack.peek();
+        final State current_state = stack.peek();
 
         int set_limit;
         switch (set)
@@ -363,33 +357,52 @@ public class GameActivity extends WearableActivity {
                 Log.d(TAG, "*** Game is Over ***");
                 handler.removeCallbacks(updateTimer);
 
-                Intent intent = new Intent(GameActivity.this, ResultActivity.class);
-                intent.putExtra("SET1_GAME_UP",   String.valueOf(current_state.getSet_game_up((byte)0x01)));
-                intent.putExtra("SET1_GAME_DOWN", String.valueOf(current_state.getSet_game_down((byte)0x01)));
-                intent.putExtra("SET2_GAME_UP",   String.valueOf(current_state.getSet_game_up((byte)0x02)));
-                intent.putExtra("SET2_GAME_DOWN", String.valueOf(current_state.getSet_game_down((byte)0x02)));
-                intent.putExtra("SET3_GAME_UP",   String.valueOf(current_state.getSet_game_up((byte)0x03)));
-                intent.putExtra("SET3_GAME_DOWN", String.valueOf(current_state.getSet_game_down((byte)0x03)));
-                intent.putExtra("SET4_GAME_UP",   String.valueOf(current_state.getSet_game_up((byte)0x04)));
-                intent.putExtra("SET4_GAME_DOWN", String.valueOf(current_state.getSet_game_down((byte)0x04)));
-                intent.putExtra("SET5_GAME_UP",   String.valueOf(current_state.getSet_game_up((byte)0x05)));
-                intent.putExtra("SET5_GAME_DOWN", String.valueOf(current_state.getSet_game_down((byte)0x05)));
+                AlertDialog.Builder confirmdialog = new AlertDialog.Builder(GameActivity.this);
+                confirmdialog.setTitle(getResources().getString(R.string.game_show_result_dalog));
+                confirmdialog.setIcon(R.drawable.ball_icon);
+                //confirmdialog.setMessage(request_split[0]+" "+getResources().getString(R.string.macauto_chat_dialog_want_to)+" "+request_file);
+                confirmdialog.setCancelable(false);
+                confirmdialog.setPositiveButton(getResources().getString(R.string.dialog_confirm), new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        Intent intent = new Intent(GameActivity.this, ResultActivity.class);
+                        intent.putExtra("SET1_GAME_UP",   String.valueOf(current_state.getSet_game_up((byte)0x01)));
+                        intent.putExtra("SET1_GAME_DOWN", String.valueOf(current_state.getSet_game_down((byte)0x01)));
+                        intent.putExtra("SET2_GAME_UP",   String.valueOf(current_state.getSet_game_up((byte)0x02)));
+                        intent.putExtra("SET2_GAME_DOWN", String.valueOf(current_state.getSet_game_down((byte)0x02)));
+                        intent.putExtra("SET3_GAME_UP",   String.valueOf(current_state.getSet_game_up((byte)0x03)));
+                        intent.putExtra("SET3_GAME_DOWN", String.valueOf(current_state.getSet_game_down((byte)0x03)));
+                        intent.putExtra("SET4_GAME_UP",   String.valueOf(current_state.getSet_game_up((byte)0x04)));
+                        intent.putExtra("SET4_GAME_DOWN", String.valueOf(current_state.getSet_game_down((byte)0x04)));
+                        intent.putExtra("SET5_GAME_UP",   String.valueOf(current_state.getSet_game_up((byte)0x05)));
+                        intent.putExtra("SET5_GAME_DOWN", String.valueOf(current_state.getSet_game_down((byte)0x05)));
 
-                intent.putExtra("SET1_TIEBREAK_UP",   String.valueOf(current_state.getSet_tiebreak_point_up((byte)0x01)));
-                intent.putExtra("SET1_TIEBREAK_DOWN", String.valueOf(current_state.getSet_tiebreak_point_down((byte)0x01)));
-                intent.putExtra("SET2_TIEBREAK_UP",   String.valueOf(current_state.getSet_tiebreak_point_up((byte)0x02)));
-                intent.putExtra("SET2_TIEBREAK_DOWN", String.valueOf(current_state.getSet_tiebreak_point_down((byte)0x02)));
-                intent.putExtra("SET3_TIEBREAK_UP",   String.valueOf(current_state.getSet_tiebreak_point_up((byte)0x03)));
-                intent.putExtra("SET3_TIEBREAK_DOWN", String.valueOf(current_state.getSet_tiebreak_point_down((byte)0x03)));
-                intent.putExtra("SET4_TIEBREAK_UP",   String.valueOf(current_state.getSet_tiebreak_point_up((byte)0x04)));
-                intent.putExtra("SET4_TIEBREAK_DOWN", String.valueOf(current_state.getSet_tiebreak_point_down((byte)0x04)));
-                intent.putExtra("SET5_TIEBREAK_UP",   String.valueOf(current_state.getSet_tiebreak_point_up((byte)0x05)));
-                intent.putExtra("SET5_TIEBREAK_DOWN", String.valueOf(current_state.getSet_tiebreak_point_down((byte)0x05)));
+                        intent.putExtra("SET1_TIEBREAK_UP",   String.valueOf(current_state.getSet_tiebreak_point_up((byte)0x01)));
+                        intent.putExtra("SET1_TIEBREAK_DOWN", String.valueOf(current_state.getSet_tiebreak_point_down((byte)0x01)));
+                        intent.putExtra("SET2_TIEBREAK_UP",   String.valueOf(current_state.getSet_tiebreak_point_up((byte)0x02)));
+                        intent.putExtra("SET2_TIEBREAK_DOWN", String.valueOf(current_state.getSet_tiebreak_point_down((byte)0x02)));
+                        intent.putExtra("SET3_TIEBREAK_UP",   String.valueOf(current_state.getSet_tiebreak_point_up((byte)0x03)));
+                        intent.putExtra("SET3_TIEBREAK_DOWN", String.valueOf(current_state.getSet_tiebreak_point_down((byte)0x03)));
+                        intent.putExtra("SET4_TIEBREAK_UP",   String.valueOf(current_state.getSet_tiebreak_point_up((byte)0x04)));
+                        intent.putExtra("SET4_TIEBREAK_DOWN", String.valueOf(current_state.getSet_tiebreak_point_down((byte)0x04)));
+                        intent.putExtra("SET5_TIEBREAK_UP",   String.valueOf(current_state.getSet_tiebreak_point_up((byte)0x05)));
+                        intent.putExtra("SET5_TIEBREAK_DOWN", String.valueOf(current_state.getSet_tiebreak_point_down((byte)0x05)));
 
-                intent.putExtra("GAME_DURATION", String.valueOf(String.valueOf(time_use)));
+                        intent.putExtra("GAME_DURATION", String.valueOf(String.valueOf(time_use)));
 
 
-                startActivity(intent);
+                        startActivity(intent);
+
+                    }
+                });
+                confirmdialog.setNegativeButton(getResources().getString(R.string.dialog_cancel), new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+
+
+                    }
+                });
+                confirmdialog.show();
+
+
             } else { //not finish
                 Log.d(TAG, "*** Game is running ***");
                 if (you_score) {
@@ -511,6 +524,9 @@ public class GameActivity extends WearableActivity {
                     Log.d(TAG, "In tiebreak : " + new_state.isInTiebreak());
                     Log.d(TAG, "Finish : " + new_state.isFinish());
 
+                    Log.d(TAG, "Set up : " + new_state.getSetsUp());
+                    Log.d(TAG, "Set down : " + new_state.getSetsDown());
+
                     for (int i = 1; i <= set_limit; i++) {
                         Log.d(TAG, "================================");
                         Log.d(TAG, "[set " + i + "]");
@@ -524,6 +540,16 @@ public class GameActivity extends WearableActivity {
                     //then look up top state
                     //State new_current_state = stack.peek();
                     current_set = new_state.getCurrent_set();
+
+                    if (new_state.getSetsUp() > 0 || new_state.getSetsDown() > 0) {
+                        setLayout.setVisibility(View.VISIBLE);
+                        setUp.setText(String.valueOf(new_state.getSetsUp()));
+                        setDown.setText(String.valueOf(new_state.getSetsDown()));
+                    } else {
+                        setLayout.setVisibility(View.GONE);
+                        setUp.setText("0");
+                        setDown.setText("0");
+                    }
 
                     gameUp.setText(String.valueOf(new_state.getSet_game_up(current_set)));
                     gameDown.setText(String.valueOf(new_state.getSet_game_down(current_set)));
@@ -606,40 +632,40 @@ public class GameActivity extends WearableActivity {
                 Log.d(TAG, "=== I score start ===");
 
                 //if (stack.isEmpty()) { //the state stack is empty
-                    new_state = new State();
-                    Log.d(TAG, "==>[Stack empty]");
-                    if (serve.equals("0"))
-                        new_state.setServe(true);
-                    else
-                        new_state.setServe(false);
+                new_state = new State();
+                Log.d(TAG, "==>[Stack empty]");
+                if (serve.equals("0"))
+                    new_state.setServe(true);
+                else
+                    new_state.setServe(false);
 
-                    //set current set = 1
-                    new_state.setCurrent_set((byte) 0x01);
+                //set current set = 1
+                new_state.setCurrent_set((byte) 0x01);
 
-                    new_state.setSet_point_down((byte) 0x01, (byte) 0x01);
-                    //new_state.setSet_1_point_down((byte)0x01);
+                new_state.setSet_point_down((byte) 0x01, (byte) 0x01);
+                //new_state.setSet_1_point_down((byte)0x01);
 
 
-                    //Log.e(TAG, "get_set_1_point_down = "+new_state.getSet_1_point_down()+", isServe ? "+ (new_state.isServe() ? "YES" : "NO"));
+                //Log.e(TAG, "get_set_1_point_down = "+new_state.getSet_1_point_down()+", isServe ? "+ (new_state.isServe() ? "YES" : "NO"));
                 //}
 
                 Log.d(TAG, "=== I score end ===");
             } else {
                 Log.d(TAG, "=== Oppt score start ===");
                 //if (stack.isEmpty()) { //the state stack is empty
-                    new_state = new State();
-                    Log.d(TAG, "==>[Stack empty]");
-                    if (serve.equals("0"))
-                        new_state.setServe(true);
-                    else
-                        new_state.setServe(false);
+                new_state = new State();
+                Log.d(TAG, "==>[Stack empty]");
+                if (serve.equals("0"))
+                    new_state.setServe(true);
+                else
+                    new_state.setServe(false);
 
-                    //set current set = 1
-                    new_state.setCurrent_set((byte) 0x01);
+                //set current set = 1
+                new_state.setCurrent_set((byte) 0x01);
 
-                    new_state.setSet_point_up((byte) 0x01, (byte) 0x01);
+                new_state.setSet_point_up((byte) 0x01, (byte) 0x01);
 
-                    //Log.e(TAG, "get_set_1_point_up = "+new_state.getSet_1_point_up()+", isServe ? "+ (new_state.isServe() ? "YES" : "NO"));
+                //Log.e(TAG, "get_set_1_point_up = "+new_state.getSet_1_point_up()+", isServe ? "+ (new_state.isServe() ? "YES" : "NO"));
 
                 //}
                 Log.d(TAG, "=== Oppt score end ===");
@@ -652,6 +678,9 @@ public class GameActivity extends WearableActivity {
                 Log.d(TAG, "Serve : " + new_state.isServe());
                 Log.d(TAG, "In tiebreak : " + new_state.isInTiebreak());
                 Log.d(TAG, "Finish : " + new_state.isFinish());
+
+                Log.d(TAG, "Set up : " + new_state.getSetsUp());
+                Log.d(TAG, "set down : " + new_state.getSetsDown());
 
                 for (int i = 1; i <= set_limit; i++) {
                     Log.d(TAG, "================================");
@@ -1090,4 +1119,6 @@ public class GameActivity extends WearableActivity {
             //textGameTime.setText(sdf.format(gameDate));
         }
     };
+
+
 }

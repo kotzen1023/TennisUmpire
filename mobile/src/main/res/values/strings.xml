@@ -1,3 +1,26 @@
 <resources>
-    <string name="app_name">TennisUmpire</string>
+    <string name="app_name">Tennis Score Board</string>
+    <string name="setup_one_set">1 set</string>
+    <string name="setup_three_sets">3 Sets</string>
+    <string name="setup_five_set">5 Sets</string>
+    <string name="setup_four_game">4 Games</string>
+    <string name="setup_six_games">6 Games</string>
+    <string name="setup_tiebreak">Tiebreak</string>
+    <string name="setup_deuce">Deuce</string>
+    <string name="setup_deciding_game">Deciding Game</string>
+    <string name="setup_deciding_point">Deciding Point</string>
+    <string name="setup_serve_first">Bottom Serve</string>
+    <string name="setup_receive">Bottom Receive</string>
+    <string name="setup_confirm">Ok</string>
+    <string name="game_back">Back</string>
+    <string name="game_reset">Reset</string>
+    <string name="score_up">Score Top</string>
+    <string name="score_down">Score Bottom</string>
+    <string name="main_standalone">Standalone</string>
+    <string name="main_wear_mode">Wear Mode</string>
+    <string name="game_duration">Duration</string>
+    <string name="game_show_result_dalog">Show game result?</string>
+    <string name="dialog_confirm">Ok</string>
+    <string name="dialog_cancel">Cancel</string>
 </resources>
+
