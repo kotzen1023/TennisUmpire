@@ -7,6 +7,7 @@ public class State {
     private boolean isFinish;
     private byte setsUp;
     private byte setsDown;
+    private long duration;
 
     private byte set_1_game_up;
     private byte set_1_game_down;
@@ -94,6 +95,14 @@ public class State {
 
     public void setSetsDown(byte setsDown) {
         this.setsDown = setsDown;
+    }
+
+    public long getDuration() {
+        return duration;
+    }
+
+    public void setDuration(long duration) {
+        this.duration = duration;
     }
 
     public byte getSet_game_up(byte set) {

@@ -10,24 +10,32 @@ import android.os.Handler;
 
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.seventhmoon.tennisumpire.Data.State;
 
 
+import java.nio.charset.Charset;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayDeque;
 
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Deque;
 import java.util.TimeZone;
+
+import static com.seventhmoon.tennisumpire.Data.FileOperation.append_record;
+import static com.seventhmoon.tennisumpire.Data.FileOperation.clear_record;
 
 
 public class GameActivity extends AppCompatActivity{
@@ -45,6 +53,7 @@ public class GameActivity extends AppCompatActivity{
     private ImageView imgServeUp;
     private ImageView imgServeDown;
     private LinearLayout setLayout;
+    private LinearLayout nameLayout;
     private TextView setUp;
     private TextView setDown;
 
@@ -59,6 +68,11 @@ public class GameActivity extends AppCompatActivity{
     private static String tiebreak;
     private static String deuce;
     private static String serve;
+
+    private static String filename;
+    private static String playerUp;
+    private static String playerDown;
+
     private static long startTime;
     private static Handler handler;
     private static long time_use = 0;
@@ -74,6 +88,8 @@ public class GameActivity extends AppCompatActivity{
         Button btnBack;
         Button btnOpptScore;
         Button btnReset;
+        Button btnSave;
+        Button btnLoad;
 
         handler = new Handler();
 
@@ -89,11 +105,19 @@ public class GameActivity extends AppCompatActivity{
         deuce = intent.getStringExtra("SETUP_DEUCE");
         serve = intent.getStringExtra("SETUP_SERVE");
 
+        filename = intent.getStringExtra("FILE_NAME");
+        playerUp = intent.getStringExtra("PLAYER_UP");
+        playerDown = intent.getStringExtra("PLAYER_DOWN");
+
         Log.e(TAG, "SET = "+set);
         //Log.e(TAG, "GAME = "+game);
         Log.e(TAG, "TIEBREAK = "+tiebreak);
         Log.e(TAG, "DEUCE = "+deuce);
         Log.e(TAG, "SERVE = "+serve);
+
+        Log.e(TAG, "filename = "+filename);
+        Log.e(TAG, "playerUp = "+playerUp);
+        Log.e(TAG, "playerDown = "+playerDown);
 
         //mContainerView = (BoxInsetLayout) findViewById(R.id.container);
 
@@ -109,6 +133,7 @@ public class GameActivity extends AppCompatActivity{
         textGameTime = (TextView) findViewById(R.id.gameTime);
 
         setLayout = (LinearLayout) findViewById(R.id.setLayout);
+        nameLayout = (LinearLayout) findViewById(R.id.nameLayout);
         setUp = (TextView) findViewById(R.id.textViewSetUp);
         setDown = (TextView) findViewById(R.id.textViewSetDown);
 
@@ -126,7 +151,10 @@ public class GameActivity extends AppCompatActivity{
             imgServeDown.setVisibility(View.INVISIBLE);
         }
 
-
+        if (!playerUp.equals("") && !playerDown.equals(""))
+            nameLayout.setVisibility(View.VISIBLE);
+        else
+            nameLayout.setVisibility(View.GONE);
 
 
 
@@ -139,6 +167,14 @@ public class GameActivity extends AppCompatActivity{
         btnOpptScore = (Button) findViewById(R.id.btnOpptScore);
         btnBack = (Button) findViewById(R.id.btnBack);
         btnReset = (Button) findViewById(R.id.btnReset);
+        btnSave = (Button) findViewById(R.id.btnSave);
+        btnLoad = (Button) findViewById(R.id.btnLoad);
+
+        TextView textViewPlayerUp = (TextView) findViewById(R.id.textViewPlayerUp);
+        TextView textViewPlayerDown = (TextView) findViewById(R.id.textViewPlayerDown);
+
+        textViewPlayerUp.setText(playerUp);
+        textViewPlayerDown.setText(playerDown);
 
         btnBack.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -149,10 +185,13 @@ public class GameActivity extends AppCompatActivity{
                 } else {
                     byte current_set;
                     //stack.pop();
-                    if (stack.pop() != null) { //pop out current
+                    State popState = stack.pop();
+                    time_use = popState.getDuration();
+                    if (popState != null) { //pop out current
                         State back_state = stack.peek();
                         if (back_state != null) {
                             current_set = back_state.getCurrent_set();
+
 
                             if (back_state.getSetsUp() > 0 || back_state.getSetsDown() > 0) {
                                 setLayout.setVisibility(View.VISIBLE);
@@ -293,6 +332,75 @@ public class GameActivity extends AppCompatActivity{
                 finish();
             }
         });
+
+        btnSave.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //clear
+                clear_record(filename);
+
+                String msg = playerUp + ";" + playerDown + "|";
+                append_record(msg, filename);
+
+
+                int i = 0;
+                //load stack
+                for (State s : stack) {
+
+                    if (i >= 1) {
+                        append_record("&", filename);
+                    }
+
+
+                    String append_msg = s.getCurrent_set()+";"
+                            +s.isServe()+";"
+                            +s.isInTiebreak()+";"
+                            +s.isFinish()+";"
+                            +s.getSetsUp()+";"
+                            +s.getSetsDown()+";"
+                            +s.getDuration()+";"
+                            +s.getSet_game_up((byte)0x1)+";"
+                            +s.getSet_game_down((byte)0x1)+";"
+                            +s.getSet_point_up((byte)0x1)+";"
+                            +s.getSet_point_down((byte)0x1)+";"
+                            +s.getSet_tiebreak_point_up((byte)0x1)+";"
+                            +s.getSet_tiebreak_point_down((byte)0x1)+";"
+                            +s.getSet_game_up((byte)0x2)+";"
+                            +s.getSet_game_down((byte)0x2)+";"
+                            +s.getSet_point_up((byte)0x2)+";"
+                            +s.getSet_point_down((byte)0x2)+";"
+                            +s.getSet_tiebreak_point_up((byte)0x2)+";"
+                            +s.getSet_tiebreak_point_down((byte)0x2)+";"
+                            +s.getSet_game_up((byte)0x3)+";"
+                            +s.getSet_game_down((byte)0x3)+";"
+                            +s.getSet_point_up((byte)0x3)+";"
+                            +s.getSet_point_down((byte)0x3)+";"
+                            +s.getSet_tiebreak_point_up((byte)0x3)+";"
+                            +s.getSet_tiebreak_point_down((byte)0x3)+";"
+                            +s.getSet_game_up((byte)0x4)+";"
+                            +s.getSet_game_down((byte)0x4)+";"
+                            +s.getSet_point_up((byte)0x4)+";"
+                            +s.getSet_point_down((byte)0x4)+";"
+                            +s.getSet_tiebreak_point_up((byte)0x4)+";"
+                            +s.getSet_tiebreak_point_down((byte)0x4)+";"
+                            +s.getSet_game_up((byte)0x5)+";"
+                            +s.getSet_game_down((byte)0x5)+";"
+                            +s.getSet_point_up((byte)0x5)+";"
+                            +s.getSet_point_down((byte)0x5)+";"
+                            +s.getSet_tiebreak_point_up((byte)0x5)+";"
+                            +s.getSet_tiebreak_point_down((byte)0x5)+";";
+                    append_record(append_msg, filename);
+                    i++;
+                }
+            }
+        });
+
+        btnLoad.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
     }
 
 
@@ -420,6 +528,8 @@ public class GameActivity extends AppCompatActivity{
                         new_state.setCurrent_set((byte) 0x01);
 
                         new_state.setSet_point_down((byte) 0x01, (byte) 0x01);
+
+                        new_state.setDuration(time_use);
                         //new_state.setSet_1_point_down((byte)0x01);
 
 
@@ -439,6 +549,8 @@ public class GameActivity extends AppCompatActivity{
                             new_state.setFinish(current_state.isFinish());
                             new_state.setSetsUp(current_state.getSetsUp());
                             new_state.setSetsDown(current_state.getSetsDown());
+
+                            new_state.setDuration(time_use);
 
                             for (byte i=1; i<=set_limit; i++) {
                                 new_state.setSet_game_up(i, current_state.getSet_game_up(i));
@@ -477,6 +589,7 @@ public class GameActivity extends AppCompatActivity{
 
                         new_state.setSet_point_up((byte) 0x01, (byte) 0x01);
 
+                        new_state.setDuration(time_use);
                         //Log.e(TAG, "get_set_1_point_up = "+new_state.getSet_1_point_up()+", isServe ? "+ (new_state.isServe() ? "YES" : "NO"));
 
                     } else {
@@ -493,6 +606,8 @@ public class GameActivity extends AppCompatActivity{
                             new_state.setFinish(current_state.isFinish());
                             new_state.setSetsUp(current_state.getSetsUp());
                             new_state.setSetsDown(current_state.getSetsDown());
+
+                            new_state.setDuration(time_use);
 
                             for (byte i=1; i<=set_limit; i++) {
                                 new_state.setSet_game_up(i, current_state.getSet_game_up(i));
@@ -526,6 +641,8 @@ public class GameActivity extends AppCompatActivity{
 
                     Log.d(TAG, "Set up : " + new_state.getSetsUp());
                     Log.d(TAG, "Set down : " + new_state.getSetsDown());
+
+                    Log.d(TAG, "Duration : " + new_state.getDuration());
 
                     for (int i = 1; i <= set_limit; i++) {
                         Log.d(TAG, "================================");
@@ -1116,9 +1233,14 @@ public class GameActivity extends AppCompatActivity{
             Long sec = (time_use)%60;
             textCurrentTime.setText(sdf.format(netDate));
             textGameTime.setText(f.format(hour)+":"+f.format(min)+":"+f.format(sec));
+
             //textGameTime.setText(sdf.format(gameDate));
         }
     };
 
-
+    public void toast(String message) {
+        Toast toast = Toast.makeText(this, message, Toast.LENGTH_LONG);
+        toast.setGravity(Gravity.CENTER_HORIZONTAL|Gravity.CENTER_VERTICAL, 0, 0);
+        toast.show();
+    }
 }

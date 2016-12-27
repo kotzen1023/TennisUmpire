@@ -25,10 +25,20 @@ public class SetupMain extends AppCompatActivity{
     public ArrayAdapter<String> deuceAdapter;
     public ArrayAdapter<String> serveAdapter;
 
+    private String fileName;
+    private String playerUp;
+    private String playerDown;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.setup_menu);
+
+        Intent intent = getIntent();
+
+        fileName = intent.getStringExtra("FILE_NAME");
+        playerUp = intent.getStringExtra("PLAYER_UP");
+        playerDown = intent.getStringExtra("PLAYER_DOWN");
 
         Button confirm;
 
@@ -77,6 +87,9 @@ public class SetupMain extends AppCompatActivity{
                 intent.putExtra("SETUP_TIEBREAK", String.valueOf(tiebreakSpinner.getSelectedItemPosition()));
                 intent.putExtra("SETUP_DEUCE", String.valueOf(deuceSpinner.getSelectedItemPosition()));
                 intent.putExtra("SETUP_SERVE", String.valueOf(serveSpinner.getSelectedItemPosition()));
+                intent.putExtra("FILE_NAME", fileName);
+                intent.putExtra("PLAYER_UP", playerUp);
+                intent.putExtra("PLAYER_DOWN", playerDown);
                 startActivity(intent);
                 finish();
             }

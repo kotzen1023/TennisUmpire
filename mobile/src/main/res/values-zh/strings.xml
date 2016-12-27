@@ -17,6 +17,7 @@
     <string name="game_reset">重設</string>
     <string name="score_up">上方得分</string>
     <string name="score_down">下方得分</string>
+    <string name="score_text">得分</string>
     <string name="main_standalone">記分板模式</string>
     <string name="main_wear_mode">穿戴連動模式</string>
     <string name="game_duration">比賽時間</string>
