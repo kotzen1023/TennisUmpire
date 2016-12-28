@@ -10,6 +10,7 @@ import android.os.Environment;
 import android.os.Handler;
 
 import android.os.Parcelable;
+import android.provider.ContactsContract;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Gravity;
@@ -61,6 +62,8 @@ public class GameActivity extends AppCompatActivity{
     private LinearLayout nameLayout;
     private TextView setUp;
     private TextView setDown;
+    private ImageView imgWinCheckUp;
+    private ImageView imgWinCheckDown;
 
     //private TextView mClockView;
 
@@ -145,6 +148,9 @@ public class GameActivity extends AppCompatActivity{
         nameLayout = (LinearLayout) findViewById(R.id.nameLayout);
         setUp = (TextView) findViewById(R.id.textViewSetUp);
         setDown = (TextView) findViewById(R.id.textViewSetDown);
+
+        imgWinCheckUp = (ImageView) findViewById(R.id.imageWincheckUp);
+        imgWinCheckDown = (ImageView) findViewById(R.id.imageWincheckDown);
 
         //init score board
         gameUp.setText("0");
@@ -337,6 +343,11 @@ public class GameActivity extends AppCompatActivity{
 
                     //get back duration
                     time_use = top.getDuration();
+                    if (top.isFinish()) {
+                        handler.removeCallbacks(updateTimer);
+                        imgServeUp.setVisibility(View.INVISIBLE);
+                        imgServeDown.setVisibility(View.INVISIBLE);
+                    }
 
                     Log.d(TAG, "########## top state start ##########");
                     Log.d(TAG, "current set : " + top.getCurrent_set());
@@ -422,6 +433,11 @@ public class GameActivity extends AppCompatActivity{
                     //stack.pop();
                     State popState = stack.pop();
                     time_use = popState.getDuration();
+
+                    handler.removeCallbacks(updateTimer);
+                    handler.postDelayed(updateTimer, 1000);
+
+
                     if (popState != null) { //pop out current
                         State back_state = stack.peek();
                         if (back_state != null) {
@@ -562,7 +578,14 @@ public class GameActivity extends AppCompatActivity{
                 stack.clear();
                 handler.removeCallbacks(updateTimer);
 
+                clear_record(filename);
+
                 Intent intent = new Intent(GameActivity.this, SetupMain.class);
+                intent.putExtra("FILE_NAME", filename);
+                intent.putExtra("PLAYER_UP", playerUp);
+                intent.putExtra("PLAYER_DOWN", playerDown);
+                //playerUp = intent.getStringExtra("PLAYER_UP");
+                //playerDown = intent.getStringExtra("PLAYER_DOWN");
                 startActivity(intent);
                 finish();
             }
@@ -726,7 +749,7 @@ public class GameActivity extends AppCompatActivity{
 
             if (current_state.isFinish()) {
                 Log.d(TAG, "*** Game is Over ***");
-                handler.removeCallbacks(updateTimer);
+                //handler.removeCallbacks(updateTimer);
 
                 AlertDialog.Builder confirmdialog = new AlertDialog.Builder(GameActivity.this);
                 confirmdialog.setTitle(getResources().getString(R.string.game_show_result_dalog));
@@ -963,12 +986,25 @@ public class GameActivity extends AppCompatActivity{
                     gameUp.setText(String.valueOf(new_state.getSet_game_up(current_set)));
                     gameDown.setText(String.valueOf(new_state.getSet_game_down(current_set)));
 
-                    if (new_state.isServe()) {
+                    if (new_state.isFinish()) {
                         imgServeUp.setVisibility(View.INVISIBLE);
-                        imgServeDown.setVisibility(View.VISIBLE);
-                    } else {
-                        imgServeUp.setVisibility(View.VISIBLE);
                         imgServeDown.setVisibility(View.INVISIBLE);
+
+                        if (new_state.getSetsUp() > new_state.getSetsDown()) {
+                            imgWinCheckUp.setVisibility(View.VISIBLE);
+                            imgWinCheckDown.setVisibility(View.GONE);
+                        } else {
+                            imgWinCheckUp.setVisibility(View.GONE);
+                            imgWinCheckDown.setVisibility(View.VISIBLE);
+                        }
+                    } else {
+                        if (new_state.isServe()) {
+                            imgServeUp.setVisibility(View.INVISIBLE);
+                            imgServeDown.setVisibility(View.VISIBLE);
+                        } else {
+                            imgServeUp.setVisibility(View.VISIBLE);
+                            imgServeDown.setVisibility(View.INVISIBLE);
+                        }
                     }
 
                     if (!new_state.isInTiebreak()) { //not in tiebreak
@@ -1163,6 +1199,8 @@ public class GameActivity extends AppCompatActivity{
                 } else {
                     pointDown.setText(String.valueOf(new_state.getSet_point_down(current_set)));
                 }
+
+
 
                 //push into stack
                 stack.push(new_state);
@@ -1482,11 +1520,13 @@ public class GameActivity extends AppCompatActivity{
             case "0":
                 if (setsWinUp == 1 || setsWinDown == 1) {
                     new_state.setFinish(true);
+                    handler.removeCallbacks(updateTimer);
                 }
                 break;
             case "1":
                 if (setsWinUp == 2 || setsWinDown == 2) {
                     new_state.setFinish(true);
+                    handler.removeCallbacks(updateTimer);
                 } else { // new set
                     current_set++;
                     new_state.setCurrent_set(current_set);
@@ -1495,6 +1535,7 @@ public class GameActivity extends AppCompatActivity{
             case "2":
                 if (setsWinUp == 3 || setsWinDown == 3) {
                     new_state.setFinish(true);
+                    handler.removeCallbacks(updateTimer);
                 } else { // new set
                     current_set++;
                     new_state.setCurrent_set(current_set);
@@ -1503,6 +1544,7 @@ public class GameActivity extends AppCompatActivity{
             default:
                 if (setsWinUp == 1 || setsWinDown == 1) {
                     new_state.setFinish(true);
+                    handler.removeCallbacks(updateTimer);
                 }
                 break;
         }

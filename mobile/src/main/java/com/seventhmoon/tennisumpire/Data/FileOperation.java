@@ -53,7 +53,7 @@ public class FileOperation {
         return ret;
     }
 
-    private static void removeAll() {
+    public static void removeAll() {
 
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
             //path = Environment.getExternalStorageDirectory();
@@ -72,6 +72,24 @@ public class FileOperation {
         }
 
 
+    }
+
+    public static boolean remove_file(String fileName) {
+        boolean ret = false;
+        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+            //path = Environment.getExternalStorageDirectory();
+            RootDirectory = Environment.getExternalStorageDirectory();
+        }
+
+        File file = new File(RootDirectory.getAbsolutePath() + "/.tennisScoredBoard/"+fileName);
+
+        if (file.exists()) {
+            ret = file.delete();
+        } else {
+            Log.d(TAG, "file "+file.getName()+ " is not exist");
+        }
+
+        return ret;
     }
 
     public static boolean check_file_exist(String fileName) {

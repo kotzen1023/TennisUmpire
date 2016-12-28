@@ -23,5 +23,9 @@
     <string name="game_show_result_dalog">Show game result?</string>
     <string name="dialog_confirm">Ok</string>
     <string name="dialog_cancel">Cancel</string>
+    <string name="game_save">Save</string>
+    <string name="game_load">Load</string>
+    <string name="game_load_or_delete">Load or delete %s ?</string>
+    <string name="game_delete">Delete</string>
 </resources>
 

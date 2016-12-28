@@ -175,15 +175,30 @@
                             android:layout_gravity="center_vertical"
                             android:layout_weight="1" />
 
-                        <TextView
-                            android:text="40A"
+                        <LinearLayout
+                            android:orientation="horizontal"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
-                            android:id="@+id/textViewPointUp"
-                            android:layout_weight="1"
-                            android:gravity="center_vertical"
-                            android:paddingLeft="10dp"
-                            android:textSize="70sp"/>
+                            android:layout_weight="1">
+
+                            <TextView
+                                android:text="40A"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:id="@+id/textViewPointUp"
+                                android:layout_weight="1"
+                                android:gravity="center_vertical"
+                                android:paddingLeft="10dp"
+                                android:textSize="70sp"/>
+
+                            <ImageView
+                                android:layout_width="wrap_content"
+                                android:layout_height="match_parent"
+                                app:srcCompat="@drawable/ic_done_white_48dp"
+                                android:id="@+id/imageWincheckUp"
+                                android:layout_weight="1"
+                                android:visibility="gone"/>
+                        </LinearLayout>
 
 
                     </LinearLayout>
@@ -202,15 +217,31 @@
                             android:layout_gravity="center_vertical"
                             android:layout_weight="1" />
 
-                        <TextView
-                            android:text="40"
+                        <LinearLayout
+                            android:orientation="horizontal"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
-                            android:id="@+id/textViewPointDown"
-                            android:layout_weight="1"
-                            android:gravity="center_vertical"
-                            android:paddingLeft="10dp"
-                            android:textSize="70sp"/>
+                            android:layout_weight="1">
+
+                            <TextView
+                                android:text="40"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:id="@+id/textViewPointDown"
+                                android:layout_weight="1"
+                                android:gravity="center_vertical"
+                                android:paddingLeft="10dp"
+                                android:textSize="70sp"/>
+
+                            <ImageView
+                                android:layout_width="wrap_content"
+                                android:layout_height="match_parent"
+                                app:srcCompat="@drawable/ic_done_white_48dp"
+                                android:id="@+id/imageWincheckDown"
+                                android:layout_weight="1"
+                                android:visibility="gone"/>
+                        </LinearLayout>
+
                     </LinearLayout>
 
                 </LinearLayout>
@@ -256,6 +287,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:id="@+id/btnBack"
+                    android:textSize="22sp"
                     android:layout_weight="1" />
             </LinearLayout>
 
@@ -281,6 +313,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:id="@+id/btnReset"
+                    android:textSize="22sp"
                     android:layout_weight="1" />
             </LinearLayout>
         </LinearLayout>
@@ -326,17 +359,19 @@
 
 
                 <Button
-                    android:text="Save"
+                    android:text="@string/game_save"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:id="@+id/btnSave"
+                    android:textSize="22sp"
                     android:layout_weight="1" />
 
                 <Button
-                    android:text="Load"
+                    android:text="@string/game_load"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:id="@+id/btnLoad"
+                    android:textSize="22sp"
                     android:layout_weight="1" />
             </LinearLayout>
 

@@ -1,6 +1,11 @@
 package com.seventhmoon.tennisumpire;
 
+import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.ActionBar;
@@ -12,6 +17,7 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
+import com.seventhmoon.tennisumpire.Data.Constants;
 import com.seventhmoon.tennisumpire.Data.FileChooseArrayAdapter;
 import com.seventhmoon.tennisumpire.Data.FileChooseItem;
 import com.seventhmoon.tennisumpire.Data.State;
@@ -21,6 +27,8 @@ import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+
+import static com.seventhmoon.tennisumpire.Data.FileOperation.remove_file;
 
 public class LoadGame extends AppCompatActivity {
     private static final String TAG = LoadGame.class.getName();
@@ -33,10 +41,18 @@ public class LoadGame extends AppCompatActivity {
     private static String call_activity;
     private static String previous_filename;
 
+    private static BroadcastReceiver mReceiver = null;
+    private static boolean isRegister = false;
+
+    private static ArrayList<FileChooseItem> dir = new ArrayList<>();
+    private static ArrayList<FileChooseItem> fls = new ArrayList<>();
+
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         Intent intent = getIntent();
+
+        IntentFilter filter;
 
         call_activity = intent.getStringExtra("CALL_ACTIVITY");
         previous_filename = intent.getStringExtra("PREVIOUS_FILENAME");
@@ -52,19 +68,13 @@ public class LoadGame extends AppCompatActivity {
             RootDirectory = Environment.getExternalStorageDirectory();
         }
         //check folder
-        File folder = new File(RootDirectory.getAbsolutePath() + "/.tennisScoredBoard");
+        final File folder = new File(RootDirectory.getAbsolutePath() + "/.tennisScoredBoard");
 
-        fill(folder);
-    }
+        dir.clear();
+        fls.clear();
 
-    private void fill(File f)
-    {
-        final File[]dirs = f.listFiles();
-        //this.setTitle("Current Dir: "+f.getName());
+        File[] dirs = folder.listFiles();
 
-
-        ArrayList<FileChooseItem> dir = new ArrayList<>();
-        ArrayList<FileChooseItem> fls = new ArrayList<>();
         try{
             for(File ff: dirs)
             {
@@ -90,51 +100,117 @@ public class LoadGame extends AppCompatActivity {
 
         fileChooseArrayAdapter = new FileChooseArrayAdapter(LoadGame.this,R.layout.file_choose_item,dir);
         listView.setAdapter(fileChooseArrayAdapter);
-        //listView.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE);
+
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
-                FileChooseItem o = fileChooseArrayAdapter.getItem(position);
+                final FileChooseItem o = fileChooseArrayAdapter.getItem(position);
                 Log.d(TAG, "select file "+ o.getFileName());
-                Intent intent = new Intent(LoadGame.this, GameActivity.class);
-                intent.putExtra("FILE_NAME", o.getFileName());
-                startActivity(intent);
-                finish();
+
+                AlertDialog.Builder confirmdialog = new AlertDialog.Builder(LoadGame.this);
+                confirmdialog.setTitle(getResources().getString(R.string.game_load_or_delete, o.getFileName()));
+                confirmdialog.setIcon(R.drawable.ball_icon);
+                confirmdialog.setCancelable(false);
+                confirmdialog.setPositiveButton(getResources().getString(R.string.game_load), new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        Intent intent = new Intent(LoadGame.this, GameActivity.class);
+                        intent.putExtra("FILE_NAME", o.getFileName());
+                        startActivity(intent);
+                        finish();
+
+                    }
+                });
+                confirmdialog.setNegativeButton(getResources().getString(R.string.dialog_cancel), new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+
+
+                    }
+                });
+                confirmdialog.setNeutralButton(getResources().getString(R.string.game_delete), new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        remove_file(o.getFileName());
+                        //send broadcast
+                        Intent intent = new Intent(Constants.ACTION.GAME_DELETE_COMPLETE);
+                        sendBroadcast(intent);
+                    }
+                });
+                confirmdialog.show();
+
+
+
             }
         });
 
-        /*listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+        mReceiver = new BroadcastReceiver() {
             @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                //Log.e(TAG, "position = " + position + ", size = " + listView.getCount());
-                Data.FileChooseLongClick = true;
-                //FileChooseItem fileChooseItem = (FileChooseItem) fileChooseArrayAdapter.getItem(position);
-                //Log.i(TAG, "name = "+fileChooseItem.getName());
-                //Log.e(TAG, "ck = " + fileChooseItem.getCheckBox());
-                //fileChooseItem.getCheckBox().setVisibility(View.VISIBLE);
+            public void onReceive(Context context, Intent intent) {
+                if (intent.getAction().equalsIgnoreCase(Constants.ACTION.GAME_DELETE_COMPLETE)) {
+                    Log.d(TAG, "receive brocast !");
 
-                for(int i=0;i<listView.getCount(); i++) {
-                    FileChooseItem fileChooseItem = fileChooseArrayAdapter.getItem(i);
+                    dir.clear();
+                    fls.clear();
 
-                    //Log.i(TAG, "item["+i+"]="+fileChooseItem.getName());
+                    File[] dirs = folder.listFiles();
 
-                    if (fileChooseItem.getCheckBox() != null) {
-                        //Log.e(TAG, "set item[" + i + "] visible");
-                        if (!fileChooseItem.getName().equals(".."))
-                            fileChooseItem.getCheckBox().setVisibility(View.VISIBLE);
-                        else
-                            fileChooseItem.getCheckBox().setVisibility(View.INVISIBLE);
+                    try{
+                        for(File ff: dirs)
+                        {
+                            Date lastModDate = new Date(ff.lastModified());
+                            DateFormat formater = DateFormat.getDateTimeInstance();
+                            String date_modify = formater.format(lastModDate);
+                            //CheckBox checkBox = new CheckBox(getApplicationContext());
+                            if(!ff.isDirectory()){
+
+
+                                char first = ff.getName().charAt(0);
+                                if (first != '.')
+                                    fls.add(new FileChooseItem(ff.getName(), date_modify));
+                            }
+                        }
+                    } catch(Exception e) {
+                        e.printStackTrace();
                     }
+                    //Collections.sort(dir);
+                    Collections.sort(fls);
+                    dir.addAll(fls);
+
+
+                    fileChooseArrayAdapter = new FileChooseArrayAdapter(LoadGame.this,R.layout.file_choose_item,dir);
+                    listView.setAdapter(fileChooseArrayAdapter);
 
                 }
-
-
-                return false;
             }
-        });*/
+        };
+
+        if (!isRegister) {
+            filter = new IntentFilter();
+            filter.addAction(Constants.ACTION.GAME_DELETE_COMPLETE);
+            registerReceiver(mReceiver, filter);
+            isRegister = true;
+            Log.d(TAG, "registerReceiver mReceiver");
+        }
     }
+
+    @Override
+    protected void onDestroy() {
+        Log.d(TAG, "onDestroy");
+
+        if (isRegister && mReceiver != null) {
+            try {
+                unregisterReceiver(mReceiver);
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+            }
+            isRegister = false;
+            mReceiver = null;
+        }
+
+        super.onDestroy();
+
+    }
+
+
 
     @Override
     public void onBackPressed() {
