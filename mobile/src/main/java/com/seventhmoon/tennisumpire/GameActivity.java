@@ -188,36 +188,39 @@ public class GameActivity extends AppCompatActivity{
 
             String info[] = msg[0].split(";");
 
-            playerUp = info[0];
-            playerDown = info[1];
+            if (info.length > 1) {
 
-            if (playerUp != null && playerDown != null) {
-                if (!playerUp.equals("") && !playerDown.equals(""))
-                    nameLayout.setVisibility(View.VISIBLE);
-                else
-                    nameLayout.setVisibility(View.GONE);
+                playerUp = info[0];
+                playerDown = info[1];
+
+                if (playerUp != null && playerDown != null) {
+                    if (!playerUp.equals("") && !playerDown.equals(""))
+                        nameLayout.setVisibility(View.VISIBLE);
+                    else
+                        nameLayout.setVisibility(View.GONE);
+                }
+
+                if (Boolean.valueOf(info[2])) { //tiebreak
+                    tiebreak = "0";
+                } else {
+                    tiebreak = "1";
+                }
+
+                if (Boolean.valueOf(info[3])) { //deuce
+                    deuce = "0";
+                } else {
+                    deuce = "1";
+                }
+
+                if (Boolean.valueOf(info[4])) { //first serve
+                    serve = "0";
+                } else {
+                    serve = "1";
+                }
+
+                //set
+                set = info[5];
             }
-
-            if (Boolean.valueOf(info[2])) { //tiebreak
-                tiebreak = "0";
-            } else {
-                tiebreak = "1";
-            }
-
-            if (Boolean.valueOf(info[3])) { //deuce
-                deuce = "0";
-            } else {
-                deuce = "1";
-            }
-
-            if (Boolean.valueOf(info[4])) { //first serve
-                serve = "0";
-            } else {
-                serve = "1";
-            }
-
-            //set
-            set = info[5];
 
             if (msg.length > 1) {
 
