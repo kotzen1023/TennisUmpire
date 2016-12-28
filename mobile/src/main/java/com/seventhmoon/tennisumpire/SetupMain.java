@@ -10,6 +10,8 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
 
+import static com.seventhmoon.tennisumpire.Data.FileOperation.append_record;
+
 public class SetupMain extends AppCompatActivity{
     private static final String TAG = SetupMain.class.getName();
 
@@ -56,7 +58,7 @@ public class SetupMain extends AppCompatActivity{
         //String[] gameList = {getResources().getString(R.string.setup_four_game),
         //        getResources().getString(R.string.setup_six_games)};
 
-        String[] tiebreakList = {getResources().getString(R.string.setup_tiebreak), getResources().getString(R.string.setup_deciding_game)};
+        final String[] tiebreakList = {getResources().getString(R.string.setup_tiebreak), getResources().getString(R.string.setup_deciding_game)};
 
         String[] deuceList = {getResources().getString(R.string.setup_deuce), getResources().getString(R.string.setup_deciding_point)};
 
@@ -81,6 +83,37 @@ public class SetupMain extends AppCompatActivity{
         confirm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
+                boolean is_tiebreak;
+                boolean is_deuce;
+                boolean is_firstServe;
+
+                //int is_setLimit;
+
+                if (tiebreakSpinner.getSelectedItemPosition() == 0) {
+                    is_tiebreak = true;
+                } else {
+                    is_tiebreak = false;
+                }
+
+                if (deuceSpinner.getSelectedItemPosition() == 0) {
+                    is_deuce = true;
+                } else {
+                    is_deuce = false;
+                }
+
+                if (serveSpinner.getSelectedItemPosition() == 0) {
+                    is_firstServe = true;
+                } else {
+                    is_firstServe = false;
+                }
+
+
+
+
+                String msg = playerUp + ";" + playerDown + ";" + is_tiebreak +";"+ is_deuce+ ";" +is_firstServe+ ";"+setSpinner.getSelectedItemPosition()+ "|";
+                append_record(msg, fileName);
+
                 Intent intent = new Intent(SetupMain.this, GameActivity.class);
                 intent.putExtra("SETUP_SET", String.valueOf(setSpinner.getSelectedItemPosition()));
                 //intent.putExtra("SETUP_GAME", String.valueOf(gameSpinner.getSelectedItemPosition()));

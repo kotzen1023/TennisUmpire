@@ -5,6 +5,9 @@ public class State {
     private boolean isServe;
     private boolean isInTiebreak;
     private boolean isFinish;
+    //private boolean isDeuce;
+    //private boolean isFirstServe;
+    //private byte setLimit;
     private byte setsUp;
     private byte setsDown;
     private long duration;
@@ -80,6 +83,30 @@ public class State {
     public void setFinish(boolean isFinish) {
         this.isFinish = isFinish;
     }
+
+    /*public boolean isDeuce() {
+        return isDeuce;
+    }
+
+    public void setDeuce(boolean isDeuce) {
+        this.isDeuce = isDeuce;
+    }
+
+    public boolean isFirstServe() {
+        return isFirstServe;
+    }
+
+    public void setFirstServe(boolean isFirstServe) {
+        this.isFirstServe = isFirstServe;
+    }
+
+    public byte getSetLimit() {
+        return setLimit;
+    }
+
+    public void setSetLimit(byte setLimit) {
+        this.setLimit = setLimit;
+    }*/
 
     public byte getSetsUp() {
         return setsUp;

@@ -4,7 +4,9 @@ package com.seventhmoon.tennisumpire.Data;
 import android.os.Environment;
 import android.util.Log;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
@@ -187,5 +189,48 @@ public class FileOperation {
         Log.i(TAG, "append_record --- end (success) ---");
 
         return ret;
+    }
+
+    public static String read_record(String fileName) {
+
+
+        Log.i(TAG, "read_record() --- start ---");
+        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+            //path = Environment.getExternalStorageDirectory();
+            RootDirectory = Environment.getExternalStorageDirectory();
+        }
+
+        File file = new File(RootDirectory.getAbsolutePath() + "/.tennisScoredBoard/"+fileName);
+        String message = "";
+
+        //photo
+        if (!file.exists())
+        {
+            Log.i(TAG, "read_record() "+file.getAbsolutePath()+ " not exist");
+
+            return "";
+        }
+        else {
+            try {
+
+                FileReader fr = new FileReader(file.getAbsolutePath());
+                BufferedReader br = new BufferedReader(fr);
+                while (br.ready()) {
+
+                    message = br.readLine();
+
+                }
+                fr.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            Log.d(TAG, "message = "+message);
+
+            Log.i(TAG, "read_record() --- end ---");
+        }
+
+
+        return message;
     }
 }

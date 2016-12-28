@@ -49,6 +49,16 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        btnContinue.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, LoadGame.class);
+                intent.putExtra("CALL_ACTIVITY", "Main");
+                startActivity(intent);
+                finish();
+            }
+        });
+
         /*context = getBaseContext();
 
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -162,8 +172,8 @@ public class MainActivity extends AppCompatActivity {
                                 //clear
                                 clear_record(editFileName.getText().toString());
 
-                                String msg = editPlayerUp.getText().toString() + ";" + editPlayerDown.getText().toString() + "|";
-                                append_record(msg, editFileName.getText().toString());
+                                //String msg = editPlayerUp.getText().toString() + ";" + editPlayerDown.getText().toString() + "|";
+                                //append_record(msg, editFileName.getText().toString());
 
                                 Intent intent = new Intent(MainActivity.this, SetupMain.class);
                                 intent.putExtra("FILE_NAME", editFileName.getText().toString());
@@ -189,8 +199,8 @@ public class MainActivity extends AppCompatActivity {
                     } else {
 
                         //add new file
-                        String msg = editPlayerUp.getText().toString() + ";" + editPlayerDown.getText().toString() + "|";
-                        append_record(msg, editFileName.getText().toString());
+                        //String msg = editPlayerUp.getText().toString() + ";" + editPlayerDown.getText().toString() + "|";
+                        //append_record(msg, editFileName.getText().toString());
 
 
                         Intent intent = new Intent(MainActivity.this, SetupMain.class);

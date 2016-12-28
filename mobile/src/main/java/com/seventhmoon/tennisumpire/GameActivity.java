@@ -6,8 +6,10 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 
+import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Gravity;
@@ -22,6 +24,7 @@ import android.widget.Toast;
 import com.seventhmoon.tennisumpire.Data.State;
 
 
+import java.io.File;
 import java.nio.charset.Charset;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -35,7 +38,9 @@ import java.util.Deque;
 import java.util.TimeZone;
 
 import static com.seventhmoon.tennisumpire.Data.FileOperation.append_record;
+import static com.seventhmoon.tennisumpire.Data.FileOperation.check_file_exist;
 import static com.seventhmoon.tennisumpire.Data.FileOperation.clear_record;
+import static com.seventhmoon.tennisumpire.Data.FileOperation.read_record;
 
 
 public class GameActivity extends AppCompatActivity{
@@ -68,6 +73,7 @@ public class GameActivity extends AppCompatActivity{
     private static String tiebreak;
     private static String deuce;
     private static String serve;
+    //private static String duration;
 
     private static String filename;
     private static String playerUp;
@@ -78,6 +84,8 @@ public class GameActivity extends AppCompatActivity{
     private static long time_use = 0;
 
     private static Deque<State> stack = new ArrayDeque<>();
+
+    public static File RootDirectory = new File("/");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,6 +116,7 @@ public class GameActivity extends AppCompatActivity{
         filename = intent.getStringExtra("FILE_NAME");
         playerUp = intent.getStringExtra("PLAYER_UP");
         playerDown = intent.getStringExtra("PLAYER_DOWN");
+        //duration = intent.getStringExtra("GAME_DURATION");
 
         Log.e(TAG, "SET = "+set);
         //Log.e(TAG, "GAME = "+game);
@@ -143,22 +152,248 @@ public class GameActivity extends AppCompatActivity{
         pointUp.setText("0");
         pointDown.setText("0");
 
-        if (serve.equals("0")) { //you server first
-            imgServeUp.setVisibility(View.INVISIBLE);
-            imgServeDown.setVisibility(View.VISIBLE);
-        } else {
-            imgServeUp.setVisibility(View.VISIBLE);
-            imgServeDown.setVisibility(View.INVISIBLE);
+        if (serve != null) {
+            if (serve.equals("0")) { //you serve first
+                imgServeUp.setVisibility(View.INVISIBLE);
+                imgServeDown.setVisibility(View.VISIBLE);
+            } else {
+                imgServeUp.setVisibility(View.VISIBLE);
+                imgServeDown.setVisibility(View.INVISIBLE);
+            }
         }
 
-        if (!playerUp.equals("") && !playerDown.equals(""))
-            nameLayout.setVisibility(View.VISIBLE);
-        else
-            nameLayout.setVisibility(View.GONE);
+        if (playerUp != null && playerDown != null) {
+            if (!playerUp.equals("") && !playerDown.equals(""))
+                nameLayout.setVisibility(View.VISIBLE);
+            else
+                nameLayout.setVisibility(View.GONE);
+        }
+
+        //load file to stack
+
+        stack.clear();
+        if (check_file_exist(filename)) {
+            Log.d(TAG, "load file success!");
+            String message = read_record(filename);
+            Log.d(TAG, "message = "+ message);
+            String msg[] = message.split("\\|");
+
+            Log.d(TAG, "msg[0] = "+ msg[0]);
+
+            String info[] = msg[0].split(";");
+
+            playerUp = info[0];
+            playerDown = info[1];
+
+            if (playerUp != null && playerDown != null) {
+                if (!playerUp.equals("") && !playerDown.equals(""))
+                    nameLayout.setVisibility(View.VISIBLE);
+                else
+                    nameLayout.setVisibility(View.GONE);
+            }
+
+            if (Boolean.valueOf(info[2])) { //tiebreak
+                tiebreak = "0";
+            } else {
+                tiebreak = "1";
+            }
+
+            if (Boolean.valueOf(info[3])) { //deuce
+                deuce = "0";
+            } else {
+                deuce = "1";
+            }
+
+            if (Boolean.valueOf(info[4])) { //first serve
+                serve = "0";
+            } else {
+                serve = "1";
+            }
+
+            //set
+            set = info[5];
+
+            if (msg.length > 1) {
+
+                String stat[] = msg[1].split("&");
 
 
+                for (int i = 0; i < stat.length; i++) {
+                    String data[] = stat[i].split(";");
+                    State new_state = new State();
+                    new_state.setCurrent_set(Byte.valueOf(data[0]));
+                    new_state.setServe(Boolean.valueOf(data[1]));
+                    new_state.setInTiebreak(Boolean.valueOf(data[2]));
+                    new_state.setFinish(Boolean.valueOf(data[3]));
+                    //new_state.setDeuce(Boolean.valueOf(data[4]));
+                    //new_state.setFirstServe(Boolean.valueOf(data[5]));
+                    //new_state.setSetLimit(Byte.valueOf(data[6]));
+                    new_state.setSetsUp(Byte.valueOf(data[4]));
+                    new_state.setSetsDown(Byte.valueOf(data[5]));
+                    new_state.setDuration(Long.valueOf(data[6]));
+
+                    new_state.setSet_game_up((byte) 0x1, Byte.valueOf(data[7]));
+                    new_state.setSet_game_down((byte) 0x1, Byte.valueOf(data[8]));
+                    new_state.setSet_point_up((byte) 0x1, Byte.valueOf(data[9]));
+                    new_state.setSet_point_down((byte) 0x1, Byte.valueOf(data[10]));
+                    new_state.setSet_tiebreak_point_up((byte) 0x1, Byte.valueOf(data[11]));
+                    new_state.setSet_tiebreak_point_down((byte) 0x1, Byte.valueOf(data[12]));
+
+                    new_state.setSet_game_up((byte) 0x2, Byte.valueOf(data[13]));
+                    new_state.setSet_game_down((byte) 0x2, Byte.valueOf(data[14]));
+                    new_state.setSet_point_up((byte) 0x2, Byte.valueOf(data[15]));
+                    new_state.setSet_point_down((byte) 0x2, Byte.valueOf(data[16]));
+                    new_state.setSet_tiebreak_point_up((byte) 0x2, Byte.valueOf(data[17]));
+                    new_state.setSet_tiebreak_point_down((byte) 0x2, Byte.valueOf(data[18]));
+
+                    new_state.setSet_game_up((byte) 0x3, Byte.valueOf(data[19]));
+                    new_state.setSet_game_down((byte) 0x3, Byte.valueOf(data[20]));
+                    new_state.setSet_point_up((byte) 0x3, Byte.valueOf(data[21]));
+                    new_state.setSet_point_down((byte) 0x3, Byte.valueOf(data[22]));
+                    new_state.setSet_tiebreak_point_up((byte) 0x3, Byte.valueOf(data[23]));
+                    new_state.setSet_tiebreak_point_down((byte) 0x3, Byte.valueOf(data[24]));
+
+                    new_state.setSet_game_up((byte) 0x4, Byte.valueOf(data[25]));
+                    new_state.setSet_game_down((byte) 0x4, Byte.valueOf(data[26]));
+                    new_state.setSet_point_up((byte) 0x4, Byte.valueOf(data[27]));
+                    new_state.setSet_point_down((byte) 0x4, Byte.valueOf(data[28]));
+                    new_state.setSet_tiebreak_point_up((byte) 0x4, Byte.valueOf(data[29]));
+                    new_state.setSet_tiebreak_point_down((byte) 0x4, Byte.valueOf(data[30]));
+
+                    new_state.setSet_game_up((byte) 0x5, Byte.valueOf(data[31]));
+                    new_state.setSet_game_down((byte) 0x5, Byte.valueOf(data[32]));
+                    new_state.setSet_point_up((byte) 0x5, Byte.valueOf(data[33]));
+                    new_state.setSet_point_down((byte) 0x5, Byte.valueOf(data[34]));
+                    new_state.setSet_tiebreak_point_up((byte) 0x5, Byte.valueOf(data[35]));
+                    new_state.setSet_tiebreak_point_down((byte) 0x5, Byte.valueOf(data[36]));
+
+                    stack.addLast(new_state);
+
+                }
+
+                //get top
+
+                //State top = new State();
+
+                State top = stack.peek();
+                if (top != null) {
+                    byte current_set = top.getCurrent_set();
 
 
+                    if (top.getSetsUp() > 0 || top.getSetsDown() > 0) {
+                        setLayout.setVisibility(View.VISIBLE);
+                        setUp.setText(String.valueOf(top.getSetsUp()));
+                        setDown.setText(String.valueOf(top.getSetsDown()));
+                    } else {
+                        setLayout.setVisibility(View.GONE);
+                        setUp.setText("0");
+                        setDown.setText("0");
+                    }
+
+                    gameUp.setText(String.valueOf(top.getSet_game_up(current_set)));
+                    gameDown.setText(String.valueOf(top.getSet_game_down(current_set)));
+
+                    if (top.isServe()) {
+                        imgServeUp.setVisibility(View.INVISIBLE);
+                        imgServeDown.setVisibility(View.VISIBLE);
+                    } else {
+                        imgServeUp.setVisibility(View.VISIBLE);
+                        imgServeDown.setVisibility(View.INVISIBLE);
+                    }
+
+                    if (!top.isInTiebreak()) { //not in tiebreak
+                        if (top.getSet_point_up(current_set) == 1) {
+                            pointUp.setText(String.valueOf(15));
+                        } else if (top.getSet_point_up(current_set) == 2) {
+                            pointUp.setText(String.valueOf(30));
+                        } else if (top.getSet_point_up(current_set) == 3) {
+                            pointUp.setText(String.valueOf(40));
+                        } else if (top.getSet_point_up(current_set) == 4) {
+                            String score = String.valueOf(40) + "A";
+                            pointUp.setText(score);
+                        } else {
+                            pointUp.setText("0");
+                        }
+                    } else { //tie break;
+                        pointUp.setText(String.valueOf(top.getSet_point_up(current_set)));
+                    }
+
+                    if (!top.isInTiebreak()) { //not in tiebreak
+                        if (top.getSet_point_down(current_set) == 1) {
+                            pointDown.setText(String.valueOf(15));
+                        } else if (top.getSet_point_down(current_set) == 2) {
+                            pointDown.setText(String.valueOf(30));
+                        } else if (top.getSet_point_down(current_set) == 3) {
+                            pointDown.setText(String.valueOf(40));
+                        } else if (top.getSet_point_down(current_set) == 4) {
+                            String score = String.valueOf(40) + "A";
+                            pointDown.setText(score);
+                        } else {
+                            pointDown.setText("0");
+                        }
+                    } else {
+                        pointDown.setText(String.valueOf(top.getSet_point_down(current_set)));
+                    }
+
+                    //get back duration
+                    time_use = top.getDuration();
+
+                    Log.d(TAG, "########## top state start ##########");
+                    Log.d(TAG, "current set : " + top.getCurrent_set());
+                    Log.d(TAG, "Serve : " + top.isServe());
+                    Log.d(TAG, "In tiebreak : " + top.isInTiebreak());
+                    Log.d(TAG, "Finish : " + top.isFinish());
+                    //Log.d(TAG, "deuce : " + top.isDeuce());
+                    //Log.d(TAG, "First serve : "+ top.isFirstServe());
+                    Log.d(TAG, "duration : " + top.getDuration());
+
+                    int set_limit;
+                    switch (set) {
+                        case "0":
+                            set_limit = 1;
+                            break;
+                        case "1":
+                            set_limit = 3;
+                            break;
+                        case "2":
+                            set_limit = 5;
+                            break;
+                        default:
+                            set_limit = 1;
+                            break;
+                    }
+
+
+                    for (int i = 1; i <= set_limit; i++) {
+                        Log.d(TAG, "================================");
+                        Log.d(TAG, "[set " + i + "]");
+                        Log.d(TAG, "[Game : " + top.getSet_game_up((byte) i) + " / " + top.getSet_game_down((byte) i) + "]");
+                        Log.d(TAG, "[Point : " + top.getSet_point_up((byte) i) + " / " + top.getSet_point_down((byte) i) + "]");
+                        Log.d(TAG, "[tiebreak : " + top.getSet_tiebreak_point_up((byte) i) + " / " + top.getSet_tiebreak_point_down((byte) i) + "]");
+                    }
+
+                    Log.d(TAG, "########## top state end ##########");
+
+                } else {
+                    gameUp.setText("0");
+                    gameDown.setText("0");
+
+                    imgServeUp.setVisibility(View.INVISIBLE);
+                    imgServeDown.setVisibility(View.INVISIBLE);
+
+                    pointUp.setText("0");
+                    pointDown.setText("0");
+
+                    if (serve.equals("0")) { //you server first
+                        imgServeUp.setVisibility(View.INVISIBLE);
+                        imgServeDown.setVisibility(View.VISIBLE);
+                    } else {
+                        imgServeUp.setVisibility(View.VISIBLE);
+                        imgServeDown.setVisibility(View.INVISIBLE);
+                    }
+                }
+            }
+        }
 
 
         //mClockView = (TextView) findViewById(R.id.clock);
@@ -293,7 +528,7 @@ public class GameActivity extends AppCompatActivity{
                             pointUp.setText("0");
                             pointDown.setText("0");
 
-                            if (serve.equals("0")) { //you server first
+                            if (serve.equals("0")) { //you serve first
                                 imgServeUp.setVisibility(View.INVISIBLE);
                                 imgServeDown.setVisibility(View.VISIBLE);
                             } else {
@@ -339,7 +574,29 @@ public class GameActivity extends AppCompatActivity{
                 //clear
                 clear_record(filename);
 
-                String msg = playerUp + ";" + playerDown + "|";
+                boolean is_tiebreak;
+                boolean is_deuce;
+                boolean is_firstserve;
+
+                if (tiebreak.equals("0")) {
+                    is_tiebreak = true;
+                } else {
+                    is_tiebreak = false;
+                }
+
+                if (deuce.equals("0")) {
+                    is_deuce = true;
+                } else {
+                    is_deuce = false;
+                }
+
+                if (serve.equals("0")) {
+                    is_firstserve = true;
+                } else {
+                    is_firstserve = false;
+                }
+
+                String msg = playerUp + ";" + playerDown + ";" + is_tiebreak + ";" + is_deuce + ";" +is_firstserve+ ";" +set+ "|";
                 append_record(msg, filename);
 
 
@@ -356,6 +613,8 @@ public class GameActivity extends AppCompatActivity{
                             +s.isServe()+";"
                             +s.isInTiebreak()+";"
                             +s.isFinish()+";"
+                            //+s.isDeuce()+";"
+                            //+s.getSetLimit()+";"
                             +s.getSetsUp()+";"
                             +s.getSetsDown()+";"
                             +s.getDuration()+";"
@@ -388,7 +647,7 @@ public class GameActivity extends AppCompatActivity{
                             +s.getSet_point_up((byte)0x5)+";"
                             +s.getSet_point_down((byte)0x5)+";"
                             +s.getSet_tiebreak_point_up((byte)0x5)+";"
-                            +s.getSet_tiebreak_point_down((byte)0x5)+";";
+                            +s.getSet_tiebreak_point_down((byte)0x5);
                     append_record(append_msg, filename);
                     i++;
                 }
@@ -398,7 +657,11 @@ public class GameActivity extends AppCompatActivity{
         btnLoad.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                Intent intent = new Intent(GameActivity.this, LoadGame.class);
+                intent.putExtra("CALL_ACTIVITY", "Game");
+                intent.putExtra("PREVIOUS_FILENAME", filename);
+                startActivity(intent);
+                finish();
             }
         });
     }
@@ -531,7 +794,13 @@ public class GameActivity extends AppCompatActivity{
 
                         new_state.setDuration(time_use);
                         //new_state.setSet_1_point_down((byte)0x01);
+                        /*new_state.setSetLimit(Byte.valueOf(set));
 
+                        if (deuce.equals("0")) {
+                            new_state.setDeuce(true);
+                        } else {
+                            new_state.setDeuce(false);
+                        }*/
 
                         //Log.e(TAG, "get_set_1_point_down = "+new_state.getSet_1_point_down()+", isServe ? "+ (new_state.isServe() ? "YES" : "NO"));
                     } else {
@@ -547,6 +816,14 @@ public class GameActivity extends AppCompatActivity{
                             new_state.setServe(current_state.isServe());
                             new_state.setInTiebreak(current_state.isInTiebreak());
                             new_state.setFinish(current_state.isFinish());
+
+                            /*if (deuce.equals("0")) {
+                                new_state.setDeuce(true);
+                            } else {
+                                new_state.setDeuce(false);
+                            }
+
+                            new_state.setSetLimit(current_state.getSetLimit());*/
                             new_state.setSetsUp(current_state.getSetsUp());
                             new_state.setSetsDown(current_state.getSetsDown());
 
@@ -591,7 +868,13 @@ public class GameActivity extends AppCompatActivity{
 
                         new_state.setDuration(time_use);
                         //Log.e(TAG, "get_set_1_point_up = "+new_state.getSet_1_point_up()+", isServe ? "+ (new_state.isServe() ? "YES" : "NO"));
+                        /*new_state.setSetLimit(Byte.valueOf(set));
 
+                        if (deuce.equals("0")) {
+                            new_state.setDeuce(true);
+                        } else {
+                            new_state.setDeuce(false);
+                        }*/
                     } else {
                         Log.d(TAG, "==>[Stack not empty]");
                         if (current_state.isFinish()) {
@@ -604,6 +887,14 @@ public class GameActivity extends AppCompatActivity{
                             new_state.setServe(current_state.isServe());
                             new_state.setInTiebreak(current_state.isInTiebreak());
                             new_state.setFinish(current_state.isFinish());
+
+                            /*if (deuce.equals("0")) {
+                                new_state.setDeuce(true);
+                            } else {
+                                new_state.setDeuce(false);
+                            }
+
+                            new_state.setSetLimit(current_state.getSetLimit());*/
                             new_state.setSetsUp(current_state.getSetsUp());
                             new_state.setSetsDown(current_state.getSetsDown());
 
@@ -638,7 +929,8 @@ public class GameActivity extends AppCompatActivity{
                     Log.d(TAG, "Serve : " + new_state.isServe());
                     Log.d(TAG, "In tiebreak : " + new_state.isInTiebreak());
                     Log.d(TAG, "Finish : " + new_state.isFinish());
-
+                    //Log.d(TAG, "deuce : " + new_state.isDeuce());
+                    //Log.d(TAG, "set Limit : " + new_state.getSetLimit());
                     Log.d(TAG, "Set up : " + new_state.getSetsUp());
                     Log.d(TAG, "Set down : " + new_state.getSetsDown());
 
@@ -761,7 +1053,13 @@ public class GameActivity extends AppCompatActivity{
 
                 new_state.setSet_point_down((byte) 0x01, (byte) 0x01);
                 //new_state.setSet_1_point_down((byte)0x01);
+                /*new_state.setSetLimit(Byte.valueOf(set));
 
+                if (deuce.equals("0")) {
+                    new_state.setDeuce(true);
+                } else {
+                    new_state.setDeuce(false);
+                }*/
 
                 //Log.e(TAG, "get_set_1_point_down = "+new_state.getSet_1_point_down()+", isServe ? "+ (new_state.isServe() ? "YES" : "NO"));
                 //}
@@ -782,8 +1080,14 @@ public class GameActivity extends AppCompatActivity{
 
                 new_state.setSet_point_up((byte) 0x01, (byte) 0x01);
 
+                /*new_state.setSetLimit(Byte.valueOf(set));
                 //Log.e(TAG, "get_set_1_point_up = "+new_state.getSet_1_point_up()+", isServe ? "+ (new_state.isServe() ? "YES" : "NO"));
 
+                if (deuce.equals("0")) {
+                    new_state.setDeuce(true);
+                } else {
+                    new_state.setDeuce(false);
+                }*/
                 //}
                 Log.d(TAG, "=== Oppt score end ===");
             }
@@ -795,6 +1099,8 @@ public class GameActivity extends AppCompatActivity{
                 Log.d(TAG, "Serve : " + new_state.isServe());
                 Log.d(TAG, "In tiebreak : " + new_state.isInTiebreak());
                 Log.d(TAG, "Finish : " + new_state.isFinish());
+                //Log.d(TAG, "deuce : " + new_state.isDeuce());
+                //Log.d(TAG, "Set Limit : "+ new_state.getSetLimit());
 
                 Log.d(TAG, "Set up : " + new_state.getSetsUp());
                 Log.d(TAG, "set down : " + new_state.getSetsDown());
