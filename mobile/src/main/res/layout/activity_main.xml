@@ -17,7 +17,7 @@
         android:layout_centerHorizontal="true">
 
         <Button
-            android:text="New Game"
+            android:text="@string/main_menu_new"
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:id="@+id/btnNewGame"
@@ -25,7 +25,7 @@
             android:textSize="50sp"/>
 
         <Button
-            android:text="Continue"
+            android:text="@string/main_menu_continue"
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:id="@+id/btnContinue"

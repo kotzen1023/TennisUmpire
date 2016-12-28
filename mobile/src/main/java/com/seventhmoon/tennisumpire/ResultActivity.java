@@ -46,6 +46,9 @@ public class ResultActivity extends AppCompatActivity{
         TextView textViewSet5TieBreakDown;
         TextView textViewDuration;
 
+        TextView textWinText;
+        TextView textLoseText;
+
         Button btnOK;
 
         Intent intent = getIntent();
@@ -74,6 +77,9 @@ public class ResultActivity extends AppCompatActivity{
 
         String duration = intent.getStringExtra("GAME_DURATION");
 
+        String win_player = intent.getStringExtra("WIN_PLAYER");
+        String lose_player = intent.getStringExtra("LOSE_PLAYER");
+
         textViewSet1Up = (TextView) findViewById(R.id.set1_up);
         textViewSet1Down = (TextView) findViewById(R.id.set1_down);
         textViewSet2Up = (TextView) findViewById(R.id.set2_up);
@@ -97,6 +103,9 @@ public class ResultActivity extends AppCompatActivity{
         textViewSet5TieBreakDown = (TextView) findViewById(R.id.set5_tibreak_down);
 
         textViewDuration = (TextView) findViewById(R.id.duration);
+
+        textWinText = (TextView) findViewById(R.id.textWinPlayer);
+        textLoseText = (TextView) findViewById(R.id.textLosePlayer);
 
         if (set1_up.equals("0") && set1_down.equals("0"))
             Log.d(TAG, "1 Don't care");
@@ -180,6 +189,9 @@ public class ResultActivity extends AppCompatActivity{
         Long sec = (Long.valueOf(duration))%60;
 
         textViewDuration.setText(f.format(hour)+":"+f.format(min)+":"+f.format(sec));
+
+        textWinText.setText(win_player);
+        textLoseText.setText(lose_player);
 
         btnOK = (Button) findViewById(R.id.btnResultOk);
 

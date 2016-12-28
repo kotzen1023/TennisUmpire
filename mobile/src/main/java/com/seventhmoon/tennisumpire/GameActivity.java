@@ -299,13 +299,34 @@ public class GameActivity extends AppCompatActivity{
                     gameUp.setText(String.valueOf(top.getSet_game_up(current_set)));
                     gameDown.setText(String.valueOf(top.getSet_game_down(current_set)));
 
-                    if (top.isServe()) {
+                    if (top.isFinish()) {
+                        imgServeUp.setVisibility(View.INVISIBLE);
+                        imgServeDown.setVisibility(View.INVISIBLE);
+
+                        if (top.getSetsUp() > top.getSetsDown()) {
+                            imgWinCheckUp.setVisibility(View.VISIBLE);
+                            imgWinCheckDown.setVisibility(View.GONE);
+                        } else {
+                            imgWinCheckUp.setVisibility(View.GONE);
+                            imgWinCheckDown.setVisibility(View.VISIBLE);
+                        }
+                    } else {
+                        if (top.isServe()) {
+                            imgServeUp.setVisibility(View.INVISIBLE);
+                            imgServeDown.setVisibility(View.VISIBLE);
+                        } else {
+                            imgServeUp.setVisibility(View.VISIBLE);
+                            imgServeDown.setVisibility(View.INVISIBLE);
+                        }
+                    }
+
+                    /*if (top.isServe()) {
                         imgServeUp.setVisibility(View.INVISIBLE);
                         imgServeDown.setVisibility(View.VISIBLE);
                     } else {
                         imgServeUp.setVisibility(View.VISIBLE);
                         imgServeDown.setVisibility(View.INVISIBLE);
-                    }
+                    }*/
 
                     if (!top.isInTiebreak()) { //not in tiebreak
                         if (top.getSet_point_up(current_set) == 1) {
@@ -425,6 +446,10 @@ public class GameActivity extends AppCompatActivity{
         btnBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
+                imgWinCheckUp.setVisibility(View.GONE);
+                imgWinCheckDown.setVisibility(View.GONE);
+
                 if (stack.isEmpty()) {
                     Log.d(TAG, "stack is empty!");
 
@@ -783,6 +808,13 @@ public class GameActivity extends AppCompatActivity{
 
                         intent.putExtra("GAME_DURATION", String.valueOf(String.valueOf(time_use)));
 
+                        if (current_state.getSetsUp() > current_state.getSetsDown()) {
+                            intent.putExtra("WIN_PLAYER", playerUp);
+                            intent.putExtra("LOSE_PLAYER", playerDown);
+                        } else {
+                            intent.putExtra("WIN_PLAYER", playerDown);
+                            intent.putExtra("LOSE_PLAYER", playerUp);
+                        }
 
                         startActivity(intent);
 

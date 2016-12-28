@@ -28,4 +28,7 @@
     <string name="game_load">讀取</string>
     <string name="game_load_or_delete">讀取或刪除 %s ?</string>
     <string name="game_delete">刪除</string>
+    <string name="main_menu_new">新的比賽</string>
+    <string name="main_menu_continue">繼續未完成比賽</string>
+    <string name="result_defeat">擊敗</string>
 </resources>

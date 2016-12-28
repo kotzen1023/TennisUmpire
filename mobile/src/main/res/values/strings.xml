@@ -27,5 +27,8 @@
     <string name="game_load">Load</string>
     <string name="game_load_or_delete">Load or delete %s ?</string>
     <string name="game_delete">Delete</string>
+    <string name="main_menu_new">New Game</string>
+    <string name="main_menu_continue">Continue</string>
+    <string name="result_defeat">defeated</string>
 </resources>
 
