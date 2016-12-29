@@ -3,6 +3,7 @@ package com.seventhmoon.tennisumpire;
 
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -65,6 +66,8 @@ public class GameActivity extends AppCompatActivity{
     private ImageView imgWinCheckUp;
     private ImageView imgWinCheckDown;
 
+    private ImageView imgPlayOrPause;
+
     //private TextView mClockView;
 
 
@@ -89,6 +92,10 @@ public class GameActivity extends AppCompatActivity{
     private static Deque<State> stack = new ArrayDeque<>();
 
     public static File RootDirectory = new File("/");
+
+    private static boolean is_pause = false;
+
+    ProgressDialog loadDialog = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -152,6 +159,8 @@ public class GameActivity extends AppCompatActivity{
         imgWinCheckUp = (ImageView) findViewById(R.id.imageWincheckUp);
         imgWinCheckDown = (ImageView) findViewById(R.id.imageWincheckDown);
 
+        imgPlayOrPause = (ImageView) findViewById(R.id.imageViewPlayOrPause);
+
         //init score board
         gameUp.setText("0");
         gameDown.setText("0");
@@ -166,13 +175,24 @@ public class GameActivity extends AppCompatActivity{
                 imgServeUp.setVisibility(View.VISIBLE);
                 imgServeDown.setVisibility(View.INVISIBLE);
             }
+        } else {
+            serve = "0";
+            imgServeUp.setVisibility(View.INVISIBLE);
+            imgServeDown.setVisibility(View.VISIBLE);
         }
 
         if (playerUp != null && playerDown != null) {
-            if (!playerUp.equals("") && !playerDown.equals(""))
-                nameLayout.setVisibility(View.VISIBLE);
-            else
-                nameLayout.setVisibility(View.GONE);
+            if (playerUp.equals(""))
+                playerUp = "Player1";
+            if (playerDown.equals(""))
+                playerDown = "Player2";
+            nameLayout.setVisibility(View.VISIBLE);
+        } else {
+            if (playerUp == null)
+                playerUp = "Player1";
+            if (playerDown == null)
+                playerDown = "Player2";
+            nameLayout.setVisibility(View.VISIBLE);
         }
 
         //load file to stack
@@ -180,6 +200,14 @@ public class GameActivity extends AppCompatActivity{
         stack.clear();
         if (check_file_exist(filename)) {
             Log.d(TAG, "load file success!");
+            loadDialog = new ProgressDialog(this);
+            loadDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            loadDialog.setTitle("Loading...");
+            loadDialog.setIndeterminate(false);
+            loadDialog.setCancelable(false);
+
+            loadDialog.show();
+
             String message = read_record(filename);
             Log.d(TAG, "message = "+ message);
             String msg[] = message.split("\\|");
@@ -214,12 +242,25 @@ public class GameActivity extends AppCompatActivity{
 
                 if (Boolean.valueOf(info[4])) { //first serve
                     serve = "0";
+                    imgServeUp.setVisibility(View.INVISIBLE);
+                    imgServeDown.setVisibility(View.VISIBLE);
                 } else {
                     serve = "1";
+                    imgServeUp.setVisibility(View.VISIBLE);
+                    imgServeDown.setVisibility(View.INVISIBLE);
                 }
 
                 //set
                 set = info[5];
+            } else {
+                playerUp = "Player1";
+                playerDown = "Player2";
+                tiebreak = "0";
+                deuce = "0";
+                serve = "0";
+                set = "0";
+
+
             }
 
             if (msg.length > 1) {
@@ -371,6 +412,9 @@ public class GameActivity extends AppCompatActivity{
                         handler.removeCallbacks(updateTimer);
                         imgServeUp.setVisibility(View.INVISIBLE);
                         imgServeDown.setVisibility(View.INVISIBLE);
+
+                        is_pause = false;
+                        imgPlayOrPause.setVisibility(View.GONE);
                     }
 
                     Log.d(TAG, "########## top state start ##########");
@@ -428,6 +472,8 @@ public class GameActivity extends AppCompatActivity{
                     }
                 }
             }
+
+            loadDialog.dismiss();
         }
 
 
@@ -452,6 +498,10 @@ public class GameActivity extends AppCompatActivity{
 
                 imgWinCheckUp.setVisibility(View.GONE);
                 imgWinCheckDown.setVisibility(View.GONE);
+
+                is_pause = false;
+                imgPlayOrPause.setVisibility(View.VISIBLE);
+                imgPlayOrPause.setImageResource(R.drawable.ic_pause_white_48dp);
 
                 if (stack.isEmpty()) {
                     Log.d(TAG, "stack is empty!");
@@ -612,6 +662,7 @@ public class GameActivity extends AppCompatActivity{
                 intent.putExtra("FILE_NAME", filename);
                 intent.putExtra("PLAYER_UP", playerUp);
                 intent.putExtra("PLAYER_DOWN", playerDown);
+                intent.putExtra("SETUP_SERVE", serve);
                 //playerUp = intent.getStringExtra("PLAYER_UP");
                 //playerDown = intent.getStringExtra("PLAYER_DOWN");
                 startActivity(intent);
@@ -650,6 +701,8 @@ public class GameActivity extends AppCompatActivity{
                 String msg = playerUp + ";" + playerDown + ";" + is_tiebreak + ";" + is_deuce + ";" +is_firstserve+ ";" +set+ "|";
                 append_record(msg, filename);
 
+                State top = stack.peek();
+                top.setDuration(time_use);
 
                 int i = 0;
                 //load stack
@@ -715,6 +768,22 @@ public class GameActivity extends AppCompatActivity{
                 finish();
             }
         });
+
+        imgPlayOrPause.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!is_pause) {
+                    is_pause = true;
+                    imgPlayOrPause.setImageResource(R.drawable.ic_play_arrow_white_48dp);
+                    handler.removeCallbacks(updateTimer);
+                } else {
+                    is_pause = false;
+                    imgPlayOrPause.setImageResource(R.drawable.ic_pause_white_48dp);
+                    handler.removeCallbacks(updateTimer);
+                    handler.postDelayed(updateTimer, 1000);
+                }
+            }
+        });
     }
 
 
@@ -778,6 +847,7 @@ public class GameActivity extends AppCompatActivity{
             if (current_state.isFinish()) {
                 Log.d(TAG, "*** Game is Over ***");
                 //handler.removeCallbacks(updateTimer);
+                //
 
                 AlertDialog.Builder confirmdialog = new AlertDialog.Builder(GameActivity.this);
                 confirmdialog.setTitle(getResources().getString(R.string.game_show_result_dalog));
@@ -833,6 +903,14 @@ public class GameActivity extends AppCompatActivity{
 
 
             } else { //not finish
+                if (is_pause) { //
+                    is_pause = false;
+                    imgPlayOrPause.setImageResource(R.drawable.ic_pause_white_48dp);
+                    handler.removeCallbacks(updateTimer);
+                    handler.postDelayed(updateTimer, 1000);
+                }
+
+
                 Log.d(TAG, "*** Game is running ***");
                 if (you_score) {
                     Log.d(TAG, "=== I score start ===");
@@ -1106,7 +1184,12 @@ public class GameActivity extends AppCompatActivity{
             }
         } else {
             Log.d(TAG, "Stack is empty!");
-
+            if (is_pause) { //
+                is_pause = false;
+                imgPlayOrPause.setImageResource(R.drawable.ic_pause_white_48dp);
+                handler.removeCallbacks(updateTimer);
+                handler.postDelayed(updateTimer, 1000);
+            }
             Log.d(TAG, "*** Game is running ***");
             if (you_score) {
                 Log.d(TAG, "=== I score start ===");
@@ -1556,12 +1639,16 @@ public class GameActivity extends AppCompatActivity{
                 if (setsWinUp == 1 || setsWinDown == 1) {
                     new_state.setFinish(true);
                     handler.removeCallbacks(updateTimer);
+                    is_pause = false;
+                    imgPlayOrPause.setVisibility(View.GONE);
                 }
                 break;
             case "1":
                 if (setsWinUp == 2 || setsWinDown == 2) {
                     new_state.setFinish(true);
                     handler.removeCallbacks(updateTimer);
+                    is_pause = false;
+                    imgPlayOrPause.setVisibility(View.GONE);
                 } else { // new set
                     current_set++;
                     new_state.setCurrent_set(current_set);
@@ -1571,6 +1658,8 @@ public class GameActivity extends AppCompatActivity{
                 if (setsWinUp == 3 || setsWinDown == 3) {
                     new_state.setFinish(true);
                     handler.removeCallbacks(updateTimer);
+                    is_pause = false;
+                    imgPlayOrPause.setVisibility(View.GONE);
                 } else { // new set
                     current_set++;
                     new_state.setCurrent_set(current_set);
@@ -1580,6 +1669,8 @@ public class GameActivity extends AppCompatActivity{
                 if (setsWinUp == 1 || setsWinDown == 1) {
                     new_state.setFinish(true);
                     handler.removeCallbacks(updateTimer);
+                    is_pause = false;
+                    imgPlayOrPause.setVisibility(View.GONE);
                 }
                 break;
         }
@@ -1625,5 +1716,93 @@ public class GameActivity extends AppCompatActivity{
         Toast toast = Toast.makeText(this, message, Toast.LENGTH_LONG);
         toast.setGravity(Gravity.CENTER_HORIZONTAL|Gravity.CENTER_VERTICAL, 0, 0);
         toast.show();
+    }
+
+    @Override
+    public void onBackPressed() {
+        //clear
+        clear_record(filename);
+
+        boolean is_tiebreak;
+        boolean is_deuce;
+        boolean is_firstserve;
+
+        if (tiebreak.equals("0")) {
+            is_tiebreak = true;
+        } else {
+            is_tiebreak = false;
+        }
+
+        if (deuce.equals("0")) {
+            is_deuce = true;
+        } else {
+            is_deuce = false;
+        }
+
+        if (serve.equals("0")) {
+            is_firstserve = true;
+        } else {
+            is_firstserve = false;
+        }
+
+        String msg = playerUp + ";" + playerDown + ";" + is_tiebreak + ";" + is_deuce + ";" +is_firstserve+ ";" +set+ "|";
+        append_record(msg, filename);
+
+        State top = stack.peek();
+        top.setDuration(time_use);
+
+        int i = 0;
+        //load stack
+        for (State s : stack) {
+
+            if (i >= 1) {
+                append_record("&", filename);
+            }
+
+
+            String append_msg = s.getCurrent_set()+";"
+                    +s.isServe()+";"
+                    +s.isInTiebreak()+";"
+                    +s.isFinish()+";"
+                    //+s.isDeuce()+";"
+                    //+s.getSetLimit()+";"
+                    +s.getSetsUp()+";"
+                    +s.getSetsDown()+";"
+                    +s.getDuration()+";"
+                    +s.getSet_game_up((byte)0x1)+";"
+                    +s.getSet_game_down((byte)0x1)+";"
+                    +s.getSet_point_up((byte)0x1)+";"
+                    +s.getSet_point_down((byte)0x1)+";"
+                    +s.getSet_tiebreak_point_up((byte)0x1)+";"
+                    +s.getSet_tiebreak_point_down((byte)0x1)+";"
+                    +s.getSet_game_up((byte)0x2)+";"
+                    +s.getSet_game_down((byte)0x2)+";"
+                    +s.getSet_point_up((byte)0x2)+";"
+                    +s.getSet_point_down((byte)0x2)+";"
+                    +s.getSet_tiebreak_point_up((byte)0x2)+";"
+                    +s.getSet_tiebreak_point_down((byte)0x2)+";"
+                    +s.getSet_game_up((byte)0x3)+";"
+                    +s.getSet_game_down((byte)0x3)+";"
+                    +s.getSet_point_up((byte)0x3)+";"
+                    +s.getSet_point_down((byte)0x3)+";"
+                    +s.getSet_tiebreak_point_up((byte)0x3)+";"
+                    +s.getSet_tiebreak_point_down((byte)0x3)+";"
+                    +s.getSet_game_up((byte)0x4)+";"
+                    +s.getSet_game_down((byte)0x4)+";"
+                    +s.getSet_point_up((byte)0x4)+";"
+                    +s.getSet_point_down((byte)0x4)+";"
+                    +s.getSet_tiebreak_point_up((byte)0x4)+";"
+                    +s.getSet_tiebreak_point_down((byte)0x4)+";"
+                    +s.getSet_game_up((byte)0x5)+";"
+                    +s.getSet_game_down((byte)0x5)+";"
+                    +s.getSet_point_up((byte)0x5)+";"
+                    +s.getSet_point_down((byte)0x5)+";"
+                    +s.getSet_tiebreak_point_up((byte)0x5)+";"
+                    +s.getSet_tiebreak_point_down((byte)0x5);
+            append_record(append_msg, filename);
+            i++;
+        }
+
+        finish();
     }
 }

@@ -1,20 +1,32 @@
 package com.seventhmoon.tennisumpire;
 
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
+
+import java.util.ArrayList;
 
 import static com.seventhmoon.tennisumpire.Data.FileOperation.append_record;
+import static com.seventhmoon.tennisumpire.Data.FileOperation.check_file_exist;
+import static com.seventhmoon.tennisumpire.Data.FileOperation.clear_record;
 
 public class SetupMain extends AppCompatActivity{
     private static final String TAG = SetupMain.class.getName();
 
+    private TextView textUpPlayer;
+    private TextView textDownPlayer;
     private Spinner setSpinner;
     //private Spinner gameSpinner;
     private Spinner tiebreakSpinner;
@@ -30,6 +42,10 @@ public class SetupMain extends AppCompatActivity{
     private String fileName;
     private String playerUp;
     private String playerDown;
+    private String serve;
+
+    private MenuItem item_edit;
+    private static ArrayList<String> serveList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,9 +57,12 @@ public class SetupMain extends AppCompatActivity{
         fileName = intent.getStringExtra("FILE_NAME");
         playerUp = intent.getStringExtra("PLAYER_UP");
         playerDown = intent.getStringExtra("PLAYER_DOWN");
+        serve = intent.getStringExtra("SETUP_SERVE");
 
         Button confirm;
 
+        textUpPlayer = (TextView) findViewById(R.id.textViewUpPlayer);
+        textDownPlayer = (TextView) findViewById(R.id.textViewDownPlayer);
         setSpinner = (Spinner) findViewById(R.id.spinnerSets);
         //gameSpinner = (Spinner) findViewById(R.id.spinnerGames);
         tiebreakSpinner = (Spinner) findViewById(R.id.spinnerTieBreak);
@@ -62,7 +81,33 @@ public class SetupMain extends AppCompatActivity{
 
         String[] deuceList = {getResources().getString(R.string.setup_deuce), getResources().getString(R.string.setup_deciding_point)};
 
-        String[] serveList = {getResources().getString(R.string.setup_serve_first), getResources().getString(R.string.setup_receive)};
+        if (playerUp != null) {
+            if (playerUp.equals("")) {
+                playerUp = "Player1";
+            }
+        } else {
+            playerUp = "Player1";
+        }
+
+        if (playerDown != null) {
+            if (playerDown.equals("")) {
+                playerDown = "Player2";
+            }
+        } else {
+            playerDown = "Player2";
+        }
+
+        textUpPlayer.setText(playerUp);
+        textDownPlayer.setText(playerDown);
+
+        String serveUp = playerUp+" "+getResources().getString(R.string.setup_first_serve);
+        String serveDown = playerDown+" "+getResources().getString(R.string.setup_first_serve);
+
+        serveList.clear();
+        serveList.add(serveDown);
+        serveList.add(serveUp);
+
+        //String[] serveList = {serveUp, serveDown};
 
 
         setAdapter = new ArrayAdapter<>(SetupMain.this, R.layout.myspinner, setList);
@@ -79,6 +124,18 @@ public class SetupMain extends AppCompatActivity{
 
         serveAdapter = new ArrayAdapter<>(SetupMain.this, R.layout.myspinner, serveList);
         serveSpinner.setAdapter(serveAdapter);
+
+        if (serve != null) {
+
+            if (serve.equals("1")) {
+                serveSpinner.setSelection(1);
+            } else {
+                serveSpinner.setSelection(0);
+            }
+        } else {
+            serve = "0";
+            serveSpinner.setSelection(0);
+        }
 
         confirm.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -137,5 +194,97 @@ public class SetupMain extends AppCompatActivity{
 
         super.onDestroy();
 
+    }
+
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        getMenuInflater().inflate(R.menu.setup_menu, menu);
+
+        item_edit = menu.findItem(R.id.action_edit_group);
+
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        switch (item.getItemId()) {
+            case R.id.action_edit_group:
+
+                showInputDialog();
+                break;
+
+            default:
+                break;
+        }
+        return true;
+    }
+
+    protected void showInputDialog() {
+
+        // get prompts.xml view
+        /*LayoutInflater layoutInflater = LayoutInflater.from(Nfc_read_app.this);
+        View promptView = layoutInflater.inflate(R.layout.input_dialog, null);*/
+        View promptView = View.inflate(SetupMain.this, R.layout.setup_input_dialog, null);
+
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(SetupMain.this);
+        alertDialogBuilder.setView(promptView);
+
+        //final EditText editFileName = (EditText) promptView.findViewById(R.id.editFileName);
+        final EditText editPlayerUp = (EditText) promptView.findViewById(R.id.editResetPlayerUp);
+        final EditText editPlayerDown = (EditText) promptView.findViewById(R.id.editResetPlayerDown);
+        if (playerUp != null)
+            editPlayerUp.setText(playerUp);
+        if (playerDown != null)
+            editPlayerDown.setText(playerDown);
+        // setup a dialog window
+        alertDialogBuilder.setCancelable(false);
+        alertDialogBuilder.setPositiveButton(getResources().getString(R.string.dialog_confirm), new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                //resultText.setText("Hello, " + editText.getText());
+                //Log.e(TAG, "input password = " + editText.getText());
+
+                if (editPlayerUp.getText().toString().equals("")) {
+                    playerUp = "Player1";
+
+
+                } else {
+                    playerUp = editPlayerUp.getText().toString();
+                }
+
+                if (editPlayerDown.getText().toString().equals("")) {
+                    playerDown = "Player2";
+                } else {
+                    playerDown = editPlayerDown.getText().toString();
+                }
+
+                textUpPlayer.setText(playerUp);
+                textDownPlayer.setText(playerDown);
+
+                String serveUp = playerUp+" "+getResources().getString(R.string.setup_first_serve);
+                String serveDown = playerDown+" "+getResources().getString(R.string.setup_first_serve);
+
+                serveList.clear();
+                serveList.add(serveDown);
+                serveList.add(serveUp);
+
+
+                //serveAdapter = new ArrayAdapter<>(SetupMain.this, R.layout.myspinner, serveList);
+                //serveSpinner.setAdapter(serveAdapter);
+                serveAdapter.notifyDataSetChanged();
+
+                if (serve.equals("1")) {
+                    serveSpinner.setSelection(1);
+                } else {
+                    serveSpinner.setSelection(0);
+                }
+            }
+        });
+        alertDialogBuilder.setNegativeButton(getResources().getString(R.string.dialog_cancel), new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+
+            }
+        });
+        alertDialogBuilder.show();
     }
 }

@@ -335,20 +335,35 @@
                 <TextView
                     android:text=""
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:id="@+id/currentTime"
                     android:layout_weight="1"
                     android:gravity="center"
                     android:textSize="30sp"/>
 
-                <TextView
-                    android:text=""
+                <LinearLayout
+                    android:orientation="horizontal"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/gameTime"
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:textSize="30sp"/>
+                    android:layout_height="match_parent"
+                    android:layout_weight="1">
+
+                    <ImageView
+                        android:layout_width="48dp"
+                        android:layout_height="match_parent"
+                        app:srcCompat="@drawable/ic_pause_white_48dp"
+                        android:id="@+id/imageViewPlayOrPause"
+                         />
+
+                    <TextView
+                        android:text=""
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:id="@+id/gameTime"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:textSize="30sp"/>
+                </LinearLayout>
+
             </LinearLayout>
 
             <LinearLayout

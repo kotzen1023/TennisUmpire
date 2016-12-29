@@ -132,6 +132,7 @@ public class LoadGame extends AppCompatActivity {
                         remove_file(o.getFileName());
                         //send broadcast
                         Intent intent = new Intent(Constants.ACTION.GAME_DELETE_COMPLETE);
+                        intent.putExtra("REMOVE_FILE", o.getFileName());
                         sendBroadcast(intent);
                     }
                 });
@@ -147,6 +148,8 @@ public class LoadGame extends AppCompatActivity {
             public void onReceive(Context context, Intent intent) {
                 if (intent.getAction().equalsIgnoreCase(Constants.ACTION.GAME_DELETE_COMPLETE)) {
                     Log.d(TAG, "receive brocast !");
+
+                    String file_name = intent.getStringExtra("REMOVE_FILE");
 
                     dir.clear();
                     fls.clear();
@@ -179,6 +182,13 @@ public class LoadGame extends AppCompatActivity {
                     fileChooseArrayAdapter = new FileChooseArrayAdapter(LoadGame.this,R.layout.file_choose_item,dir);
                     listView.setAdapter(fileChooseArrayAdapter);
 
+                    if (dir.size() == 0) {
+                        call_activity = "Main";
+                    } else {
+                        if (file_name.equals(previous_filename)) {
+                            call_activity = "Main";
+                        }
+                    }
                 }
             }
         };

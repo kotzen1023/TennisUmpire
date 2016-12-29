@@ -422,7 +422,7 @@
         </LinearLayout>
 
         <Button
-            android:text="OK"
+            android:text="@string/setup_confirm"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:id="@+id/btnResultOk"
