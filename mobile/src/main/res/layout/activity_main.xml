@@ -9,27 +9,5 @@
 
 
 
-    <LinearLayout
-        android:orientation="vertical"
-        android:layout_width="match_parent"
-        android:layout_height="160dp"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true">
 
-        <Button
-            android:text="@string/main_menu_new"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:id="@+id/btnNewGame"
-            android:layout_weight="1"
-            android:textSize="50sp"/>
-
-        <Button
-            android:text="@string/main_menu_continue"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:id="@+id/btnContinue"
-            android:layout_weight="1"
-            android:textSize="50sp"/>
-    </LinearLayout>
 </RelativeLayout>
