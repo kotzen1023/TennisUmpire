@@ -43,6 +43,7 @@ public class GameActivity extends WearableActivity {
 
     private TextView textCurrentTime;
     private TextView textGameTime;
+    private ImageView imgPlayOrPause;
 
     private static String set;
     //private static String game;
@@ -52,6 +53,7 @@ public class GameActivity extends WearableActivity {
     private static long startTime;
     private static Handler handler;
     private static long time_use = 0;
+    private static boolean is_pause = false;
 
     private static Deque<State> stack = new ArrayDeque<>();
 
@@ -100,6 +102,8 @@ public class GameActivity extends WearableActivity {
         textCurrentTime = (TextView) findViewById(R.id.currentTime);
         textGameTime = (TextView) findViewById(R.id.gameTime);
 
+        imgPlayOrPause = (ImageView) findViewById(R.id.imagePlayOrPause);
+
         //init score board
         gameUp.setText("0");
         gameDown.setText("0");
@@ -126,6 +130,11 @@ public class GameActivity extends WearableActivity {
         btnImgBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
+                is_pause = false;
+                imgPlayOrPause.setVisibility(View.VISIBLE);
+                imgPlayOrPause.setImageResource(R.drawable.ic_pause_white_48dp);
+
                 if (stack.isEmpty()) {
                     Log.d(TAG, "stack is empty!");
 
@@ -266,6 +275,22 @@ public class GameActivity extends WearableActivity {
                 finish();
             }
         });
+
+        imgPlayOrPause.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!is_pause) {
+                    is_pause = true;
+                    imgPlayOrPause.setImageResource(R.drawable.ic_play_arrow_white_48dp);
+                    handler.removeCallbacks(updateTimer);
+                } else {
+                    is_pause = false;
+                    imgPlayOrPause.setImageResource(R.drawable.ic_pause_white_48dp);
+                    handler.removeCallbacks(updateTimer);
+                    handler.postDelayed(updateTimer, 1000);
+                }
+            }
+        });
     }
 
     @Override
@@ -391,6 +416,12 @@ public class GameActivity extends WearableActivity {
 
                 startActivity(intent);
             } else { //not finish
+                if (is_pause) { //
+                    is_pause = false;
+                    imgPlayOrPause.setImageResource(R.drawable.ic_pause_white_48dp);
+                    handler.removeCallbacks(updateTimer);
+                    handler.postDelayed(updateTimer, 1000);
+                }
                 Log.d(TAG, "*** Game is running ***");
                 if (you_score) {
                     Log.d(TAG, "=== I score start ===");
@@ -601,6 +632,12 @@ public class GameActivity extends WearableActivity {
         } else {
             Log.d(TAG, "Stack is empty!");
 
+            if (is_pause) { //
+                is_pause = false;
+                imgPlayOrPause.setImageResource(R.drawable.ic_pause_white_48dp);
+                handler.removeCallbacks(updateTimer);
+                handler.postDelayed(updateTimer, 1000);
+            }
             Log.d(TAG, "*** Game is running ***");
             if (you_score) {
                 Log.d(TAG, "=== I score start ===");
@@ -1031,6 +1068,9 @@ public class GameActivity extends WearableActivity {
                 if (setsWinUp == 1 || setsWinDown == 1) {
                     new_state.setFinish(true);
                 }
+                handler.removeCallbacks(updateTimer);
+                is_pause = false;
+                imgPlayOrPause.setVisibility(View.GONE);
                 break;
             case "1":
                 if (setsWinUp == 2 || setsWinDown == 2) {
@@ -1039,6 +1079,9 @@ public class GameActivity extends WearableActivity {
                     current_set++;
                     new_state.setCurrent_set(current_set);
                 }
+                handler.removeCallbacks(updateTimer);
+                is_pause = false;
+                imgPlayOrPause.setVisibility(View.GONE);
                 break;
             case "2":
                 if (setsWinUp == 3 || setsWinDown == 3) {
@@ -1047,11 +1090,17 @@ public class GameActivity extends WearableActivity {
                     current_set++;
                     new_state.setCurrent_set(current_set);
                 }
+                handler.removeCallbacks(updateTimer);
+                is_pause = false;
+                imgPlayOrPause.setVisibility(View.GONE);
                 break;
             default:
                 if (setsWinUp == 1 || setsWinDown == 1) {
                     new_state.setFinish(true);
                 }
+                handler.removeCallbacks(updateTimer);
+                is_pause = false;
+                imgPlayOrPause.setVisibility(View.GONE);
                 break;
         }
 
