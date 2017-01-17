@@ -10,6 +10,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.seventhmoon.tennisumpire.Data.InitData;
 import com.seventhmoon.tennisumpire.Data.State;
 
 import java.text.DecimalFormat;
@@ -61,6 +62,8 @@ public class GameActivity extends WearableActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.game_layout);
+
+        InitData.is_running = true;
 
         Button btnYouScore;
         ImageView btnImgBack;
@@ -294,6 +297,27 @@ public class GameActivity extends WearableActivity {
     }
 
     @Override
+    protected void onPause() {
+        Log.d(TAG, "onPause");
+        super.onPause();
+
+        //is_pause = true;
+        //imgPlayOrPause.setImageResource(R.drawable.ic_play_arrow_white_48dp);
+        //handler.removeCallbacks(updateTimer);
+    }
+
+    @Override
+    protected void onResume() {
+        Log.d(TAG, "onResume");
+        super.onResume();
+
+        //is_pause = false;
+        //imgPlayOrPause.setImageResource(R.drawable.ic_pause_white_48dp);
+        //handler.removeCallbacks(updateTimer);
+        //handler.postDelayed(updateTimer, 1000);
+    }
+
+    @Override
     public void onEnterAmbient(Bundle ambientDetails) {
         super.onEnterAmbient(ambientDetails);
         updateDisplay();
@@ -334,6 +358,7 @@ public class GameActivity extends WearableActivity {
         time_use = 0;
         stack.clear();
         handler.removeCallbacks(updateTimer);
+        InitData.is_running = false;
 
         super.onDestroy();
 
@@ -1113,7 +1138,7 @@ public class GameActivity extends WearableActivity {
         public void run() {
             //final TextView time = (TextView) findViewById(R.id.currentTime);
             NumberFormat f = new DecimalFormat("00");
-            Long spentTime = System.currentTimeMillis() - startTime;
+            //Long spentTime = System.currentTimeMillis() - startTime;
             //計算目前已過分鐘數
 
             //計算目前已過秒數

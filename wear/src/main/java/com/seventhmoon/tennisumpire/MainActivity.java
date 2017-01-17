@@ -9,6 +9,8 @@ import android.os.Bundle;
 import android.support.wearable.activity.WearableActivity;
 import android.util.Log;
 
+import com.seventhmoon.tennisumpire.Data.InitData;
+
 import static com.seventhmoon.tennisumpire.Data.InitData.mAccelerometer;
 import static com.seventhmoon.tennisumpire.Data.InitData.mGravity;
 import static com.seventhmoon.tennisumpire.Data.InitData.mGyroscope;
@@ -38,6 +40,8 @@ public class MainActivity extends WearableActivity {
 
         Log.d(TAG, "onCreate");
 
+        //setAmbientEnabled();
+
         BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (mBluetoothAdapter == null) {
             Log.d(TAG, "Device does not support Bluetooth");
@@ -50,6 +54,7 @@ public class MainActivity extends WearableActivity {
 
             }
         }
+
 
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 
@@ -88,11 +93,24 @@ public class MainActivity extends WearableActivity {
             Log.e(TAG, "Has step counter sensor!");
         }
 
-        Intent intent = new Intent(MainActivity.this, SetupMain.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        startActivity(intent);
-        finish();
+        Log.e(TAG, "InitData.is_running = "+ InitData.is_running);
+
+        Intent intent;
+        if (InitData.is_running) {
+            Log.d(TAG, "is running, go GameActivity");
+            intent = new Intent(MainActivity.this, GameActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            startActivity(intent);
+            finish();
+        } else {
+            Log.d(TAG, "is not running, go SetupMain");
+            intent = new Intent(MainActivity.this, SetupMain.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            startActivity(intent);
+            finish();
+        }
 
 
 

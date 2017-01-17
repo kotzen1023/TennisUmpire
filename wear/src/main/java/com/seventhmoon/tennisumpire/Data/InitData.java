@@ -17,6 +17,7 @@ public class InitData {
     public static Sensor mLinearAcceration;
     public static Sensor mRotationVector;
     public static Sensor mStepCounter;
+    public static boolean is_running;
     public static SensorEventListener accelerometerListener;
     public static SensorEventListener rotationVectorListener;
 
