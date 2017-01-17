@@ -1,5 +1,6 @@
 package com.seventhmoon.tennisumpire;
 
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
@@ -7,21 +8,17 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-
-import com.seventhmoon.tennisumpire.Bluetooth.BluetoothService;
-import com.seventhmoon.tennisumpire.Data.InitData;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,11 +29,9 @@ import static com.seventhmoon.tennisumpire.Data.FileOperation.check_file_exist;
 import static com.seventhmoon.tennisumpire.Data.FileOperation.clear_record;
 import static com.seventhmoon.tennisumpire.Data.FileOperation.init_folder_and_files;
 import static com.seventhmoon.tennisumpire.Data.InitData.mBluetoothAdapter;
-import static com.seventhmoon.tennisumpire.Data.InitData.mChatService;
 
-
-public class MainActivity extends AppCompatActivity {
-    private static final String TAG = MainActivity.class.getName();
+public class NormalModeActivity extends AppCompatActivity {
+    private static final String TAG = NormalModeActivity.class.getName();
 
     public static final int REQUEST_ID_MULTIPLE_PERMISSIONS = 1;
     //private SensorManager mSensorManager;
@@ -51,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.normal_mode);
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             init_folder_and_files();
@@ -87,36 +82,26 @@ public class MainActivity extends AppCompatActivity {
             actionBar.setHomeAsUpIndicator(R.drawable.ball_icon);
         }
 
-        Button btnStandalone = (Button) findViewById(R.id.btnStandalone);
-        Button btnWearMode = (Button) findViewById(R.id.btnWearMode);
+        Button btnNewGame = (Button) findViewById(R.id.btnNormalNewGame);
+        Button btnContinue = (Button) findViewById(R.id.btnNormalContinue);
 
-        if (mBluetoothAdapter == null)
-            btnWearMode.setVisibility(View.GONE);
-
-        btnStandalone.setOnClickListener(new View.OnClickListener() {
+        btnNewGame.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(MainActivity.this, NormalModeActivity.class);
+                /*Intent intent = new Intent(MainActivity.this, SetupMain.class);
                 startActivity(intent);
-                finish();
+                finish();*/
+                showInputDialog();
             }
         });
 
-        btnWearMode.setOnClickListener(new View.OnClickListener() {
+        btnContinue.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent;
-                if (mBluetoothAdapter.isEnabled()) {
-                    intent = new Intent(MainActivity.this, GameActivity.class);
-                    intent.putExtra("WEAR_MODE", "true");
-                    startActivity(intent);
-                    finish();
-                } else {
-                    intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                    startActivityForResult(intent, REQUEST_ENABLE_BT);
-                }
-
-
+                Intent intent = new Intent(NormalModeActivity.this, LoadGame.class);
+                intent.putExtra("CALL_ACTIVITY", "Main");
+                startActivity(intent);
+                finish();
             }
         });
 
@@ -142,6 +127,19 @@ public class MainActivity extends AppCompatActivity {
         Log.i(TAG, "onDestroy");
 
 
+        /*if (isRegister && mReceiver != null) {
+
+            try {
+                unregisterReceiver(mReceiver);
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+            }
+            isRegister = false;
+            mReceiver = null;
+            Log.d(TAG, "unregisterReceiver mReceiver");
+
+        }*/
+
         super.onDestroy();
     }
 
@@ -151,7 +149,98 @@ public class MainActivity extends AppCompatActivity {
         toast.show();
     }
 
+    protected void showInputDialog() {
 
+        // get prompts.xml view
+        /*LayoutInflater layoutInflater = LayoutInflater.from(Nfc_read_app.this);
+        View promptView = layoutInflater.inflate(R.layout.input_dialog, null);*/
+        View promptView = View.inflate(NormalModeActivity.this, R.layout.input_dialog, null);
+
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(NormalModeActivity.this);
+        alertDialogBuilder.setView(promptView);
+
+        final EditText editFileName = (EditText) promptView.findViewById(R.id.editFileName);
+        final EditText editPlayerUp = (EditText) promptView.findViewById(R.id.editPlayerUp);
+        final EditText editPlayerDown = (EditText) promptView.findViewById(R.id.editPlayerDown);
+        // setup a dialog window
+        alertDialogBuilder.setCancelable(false);
+        alertDialogBuilder.setPositiveButton(getResources().getString(R.string.dialog_confirm), new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                //resultText.setText("Hello, " + editText.getText());
+                //Log.e(TAG, "input password = " + editText.getText());
+
+                if (editFileName.getText().toString().equals("")) {
+                    toast("file name empty");
+
+                } else {
+                    //check same file name
+                    if (check_file_exist(editFileName.getText().toString()))
+                    {
+                        AlertDialog.Builder confirmdialog = new AlertDialog.Builder(NormalModeActivity.this);
+                        confirmdialog.setTitle("File "+"\""+editFileName.getText().toString()+"\" is exist, want to overwrite it?");
+                        confirmdialog.setIcon(R.drawable.ball_icon);
+
+                        confirmdialog.setCancelable(false);
+                        confirmdialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                //overwrite
+                                //clear
+                                clear_record(editFileName.getText().toString());
+
+                                //String msg = editPlayerUp.getText().toString() + ";" + editPlayerDown.getText().toString() + "|";
+                                //append_record(msg, editFileName.getText().toString());
+
+                                Intent intent = new Intent(NormalModeActivity.this, SetupMain.class);
+                                intent.putExtra("FILE_NAME", editFileName.getText().toString());
+                                if (!editPlayerUp.getText().toString().equals(""))
+                                    intent.putExtra("PLAYER_UP", editPlayerUp.getText().toString());
+                                else
+                                    intent.putExtra("PLAYER_UP", "");
+                                if (!editPlayerDown.getText().toString().equals(""))
+                                    intent.putExtra("PLAYER_DOWN", editPlayerDown.getText().toString());
+                                else
+                                    intent.putExtra("PLAYER_DOWN", "");
+                                startActivity(intent);
+                                finish();
+                            }
+                        });
+                        confirmdialog.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+
+
+                            }
+                        });
+                        confirmdialog.show();
+                    } else {
+
+                        //add new file
+                        //String msg = editPlayerUp.getText().toString() + ";" + editPlayerDown.getText().toString() + "|";
+                        //append_record(msg, editFileName.getText().toString());
+
+
+                        Intent intent = new Intent(NormalModeActivity.this, SetupMain.class);
+                        intent.putExtra("FILE_NAME", editFileName.getText().toString());
+                        if (!editPlayerUp.getText().toString().equals(""))
+                            intent.putExtra("PLAYER_UP", editPlayerUp.getText().toString());
+                        else
+                            intent.putExtra("PLAYER_UP", "Player1");
+                        if (!editPlayerDown.getText().toString().equals(""))
+                            intent.putExtra("PLAYER_DOWN", editPlayerDown.getText().toString());
+                        else
+                            intent.putExtra("PLAYER_DOWN", "Player2");
+                        startActivity(intent);
+                        finish();
+                    }
+                }
+            }
+        });
+        alertDialogBuilder.setNegativeButton(getResources().getString(R.string.dialog_cancel), new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+
+            }
+        });
+        alertDialogBuilder.show();
+    }
 
     private  boolean checkAndRequestPermissions() {
         //int permissionSendMessage = ContextCompat.checkSelfPermission(this,
@@ -225,7 +314,7 @@ public class MainActivity extends AppCompatActivity {
                     // Check for both permissions
                     if (//perms.get(android.Manifest.permission.WRITE_CALENDAR) == PackageManager.PERMISSION_GRANTED &&
                             perms.get(android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED )
-                                    //&& perms.get(android.Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED)
+                    //&& perms.get(android.Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED)
                     {
                         Log.d(TAG, "write permission granted");
                         // process the normal flow
@@ -237,7 +326,7 @@ public class MainActivity extends AppCompatActivity {
                         //show the dialog or snackbar saying its necessary and try again otherwise proceed with setup.
                         if (//ActivityCompat.shouldShowRequestPermissionRationale(this, android.Manifest.permission.WRITE_CALENDAR) ||
                                 ActivityCompat.shouldShowRequestPermissionRationale(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                                        //|| ActivityCompat.shouldShowRequestPermissionRationale(this, android.Manifest.permission.CAMERA)
+                            //|| ActivityCompat.shouldShowRequestPermissionRationale(this, android.Manifest.permission.CAMERA)
                                 ) {
                             showDialogOK(getResources().getString(R.string.permission_descript),
                                     new DialogInterface.OnClickListener() {
@@ -308,5 +397,12 @@ public class MainActivity extends AppCompatActivity {
                 .setNegativeButton("Cancel", okListener)
                 .create()
                 .show();
+    }
+
+    @Override
+    public void onBackPressed() {
+        Intent intent = new Intent(NormalModeActivity.this, MainActivity.class);
+        startActivity(intent);
+        finish();
     }
 }

@@ -1,15 +1,24 @@
 package com.seventhmoon.tennisumpire;
 
+
+import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
 import android.support.wearable.activity.WearableActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.seventhmoon.tennisumpire.Bluetooth.BluetoothService;
 import com.seventhmoon.tennisumpire.Data.InitData;
 import com.seventhmoon.tennisumpire.Data.State;
 
@@ -21,7 +30,28 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Deque;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.TimeZone;
+
+import static com.seventhmoon.tennisumpire.Bluetooth.Data.Constants.DEVICE_NAME;
+import static com.seventhmoon.tennisumpire.Bluetooth.Data.Constants.MESSAGE_DEVICE_NAME;
+import static com.seventhmoon.tennisumpire.Bluetooth.Data.Constants.MESSAGE_READ;
+import static com.seventhmoon.tennisumpire.Bluetooth.Data.Constants.MESSAGE_STATE_CHANGE;
+import static com.seventhmoon.tennisumpire.Bluetooth.Data.Constants.MESSAGE_TOAST;
+import static com.seventhmoon.tennisumpire.Bluetooth.Data.Constants.MESSAGE_WRITE;
+import static com.seventhmoon.tennisumpire.Bluetooth.Data.Constants.TOAST;
+import static com.seventhmoon.tennisumpire.Data.InitData.accelerometerListener;
+import static com.seventhmoon.tennisumpire.Data.InitData.mBluetoothAdapter;
+import static com.seventhmoon.tennisumpire.Data.InitData.mChatService;
+import static com.seventhmoon.tennisumpire.Data.InitData.mConnectedDeviceName;
+import static com.seventhmoon.tennisumpire.Data.InitData.mLinearAcceration;
+import static com.seventhmoon.tennisumpire.Data.InitData.mOutStringBuffer;
+import static com.seventhmoon.tennisumpire.Data.InitData.mRotationVector;
+import static com.seventhmoon.tennisumpire.Data.InitData.mSensorManager;
+import static com.seventhmoon.tennisumpire.Data.InitData.rotationVectorListener;
+import static java.lang.Math.sqrt;
 
 
 public class GameActivity extends WearableActivity {
@@ -57,6 +87,21 @@ public class GameActivity extends WearableActivity {
     private static boolean is_pause = false;
 
     private static Deque<State> stack = new ArrayDeque<>();
+
+    private static long previous_time = 0;
+    private static long current_time = 0;
+    private static double x_previous_velocity = 0.0;
+    private static double y_previous_velocity = 0.0;
+    private static double x_current_velocity = 0.0;
+    private static double y_current_velocity = 0.0;
+    private static double previous_accel = 0.0;
+    private static double current_accel = 0.0;
+
+    private static long x_coordinate_current = 0;
+    private static long y_coordinate_current = 0;
+    private static long x_coordinate_previous = 0;
+    private static long y_coordinate_previous = 0;
+    private static double distance = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -294,6 +339,133 @@ public class GameActivity extends WearableActivity {
                 }
             }
         });
+
+        if (mBluetoothAdapter.isEnabled()) {
+
+            if (mChatService == null) {
+                setupChat();
+            }
+
+            if (mChatService != null) {
+                // Get a set of currently paired devices
+                Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
+
+                String address = "";
+
+                if (pairedDevices.size() > 0) {
+                    for (BluetoothDevice devices : pairedDevices) {
+                        Log.d(TAG, "device address : "+devices.getAddress());
+                        address = devices.getAddress();
+                        break;
+                    }
+
+                    if (!address.equals("")) {
+                        connectDevice(true, address);
+                    }
+                } else {
+                    Log.e(TAG, "No paired devices");
+                }
+            }
+        }
+
+        //sensor
+        /*
+        previous_time = 0;
+        current_time = 0;
+        x_previous_velocity = 0.0;
+        y_previous_velocity = 0.0;
+        x_current_velocity = 0.0;
+        y_current_velocity = 0.0;
+        previous_accel = 0.0;
+        current_accel = 0.0;
+
+        x_coordinate_current = 0;
+        y_coordinate_current = 0;
+
+        distance = 0.0;
+
+
+        accelerometerListener = new SensorEventListener() {
+            @Override
+            public void onSensorChanged(SensorEvent event) {
+                double time;
+
+                current_time = System.currentTimeMillis();
+                current_accel = sqrt(event.values[0]*event.values[0]+event.values[1]*event.values[1]);
+
+                if (previous_time != 0) {
+                    time = (((double) (current_time - previous_time)) / 1000);
+
+                    x_coordinate_current = (long)(event.values[0] * time * time * 100);
+                    y_coordinate_current = (long)(event.values[1] * time * time * 100);
+                    x_current_velocity =  (x_coordinate_current - x_coordinate_previous)/time ;
+                    y_current_velocity =  (y_coordinate_current - y_coordinate_previous)/time;
+
+                    double velocity = current_accel * time;
+                    if (x_coordinate_current != 0 && y_coordinate_current != 0) {
+                        //distance = distance + velocity * time;
+                        distance = distance + sqrt(x_current_velocity*x_current_velocity+y_current_velocity*y_current_velocity) * time;
+                        //Log.d(TAG, "distance = "+distance);
+                    }
+
+                    String logMsg = "(" +  x_coordinate_current + ", " +  y_coordinate_current +
+                            ")" +
+                            " vX=" +
+                            String.format("%.3f", x_current_velocity) +
+                            " vY=" +
+                            String.format("%.3f", y_current_velocity) +
+                            " aX=" +
+                            String.format("%.3f", event.values[0] * 100) +
+                            " aY=" +
+                            String.format("%.3f", event.values[1] * 100) +
+                            " sec = " +
+                            time +
+                            " d = " +
+                            String.format("%.2f", distance / 100.0)+"M" ;
+
+                    Log.d(TAG, logMsg);
+
+                    byte[] send = logMsg.getBytes();
+                    if (mChatService != null) {
+                        mChatService.write(send);
+
+                        // Reset out string buffer to zero and clear the edit text field
+                        mOutStringBuffer.setLength(0);
+                    }
+                }
+
+                previous_time = current_time;
+                previous_accel = current_accel;
+                //x_previous_velocity = x_current_velocity;
+                //y_previous_velocity = y_current_velocity;
+                x_coordinate_previous = x_coordinate_current;
+                y_coordinate_previous = y_coordinate_current;
+            }
+
+            @Override
+            public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+
+            }
+        };
+
+        mSensorManager.registerListener(accelerometerListener, mLinearAcceration, SensorManager.SENSOR_DELAY_NORMAL);
+
+        rotationVectorListener = new SensorEventListener() {
+
+            @Override
+            public void onSensorChanged(SensorEvent event) {
+                Log.d(TAG, "x : "+event.values[0]+" y : "+event.values[1]+" z : "+event.values[2]+" scalar : "+event.values[3]);
+            }
+
+            @Override
+            public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+            }
+        };
+
+        mSensorManager.registerListener(rotationVectorListener, mRotationVector, SensorManager.SENSOR_DELAY_NORMAL);
+        */
     }
 
     @Override
@@ -359,6 +531,11 @@ public class GameActivity extends WearableActivity {
         stack.clear();
         handler.removeCallbacks(updateTimer);
         InitData.is_running = false;
+
+        mChatService.stop();
+
+        //mSensorManager.unregisterListener(accelerometerListener);
+        //mSensorManager.unregisterListener(rotationVectorListener);
 
         super.onDestroy();
 
@@ -1164,4 +1341,101 @@ public class GameActivity extends WearableActivity {
             //textGameTime.setText(sdf.format(gameDate));
         }
     };
+
+    private final Handler mHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            //FragmentActivity activity = getActivity();
+            switch (msg.what) {
+                case MESSAGE_STATE_CHANGE:
+                    Log.d(TAG, "MESSAGE_STATE_CHANGE");
+                    switch (msg.arg1) {
+                        case BluetoothService.STATE_CONNECTED:
+                            Log.d(TAG, "STATE_CONNECTED");
+                            //setStatus(getString(R.string.title_connected_to, mConnectedDeviceName));
+                            //mConversationArrayAdapter.clear();
+                            break;
+                        case BluetoothService.STATE_CONNECTING:
+                            Log.d(TAG, "STATE_CONNECTING");
+                            //setStatus(R.string.title_connecting);
+                            break;
+                        case BluetoothService.STATE_LISTEN:
+                            Log.d(TAG, "STATE_LISTEN");
+                            break;
+                        case BluetoothService.STATE_NONE:
+                            Log.d(TAG, "STATE_NONE");
+                            //setStatus(R.string.title_not_connected);
+                            break;
+                    }
+                    break;
+                case MESSAGE_WRITE:
+                    Log.d(TAG, "MESSAGE_WRITE");
+                    byte[] writeBuf = (byte[]) msg.obj;
+                    // construct a string from the buffer
+                    String writeMessage = new String(writeBuf);
+                    //mConversationArrayAdapter.add("Me:  " + writeMessage);
+                    break;
+                case MESSAGE_READ:
+                    byte[] readBuf = (byte[]) msg.obj;
+                    // construct a string from the valid bytes in the buffer
+                    String readMessage = new String(readBuf, 0, msg.arg1);
+                    Log.d(TAG, "MESSAGE_READ : "+readMessage);
+                    //mConversationArrayAdapter.add(mConnectedDeviceName + ":  " + readMessage);
+                    break;
+                case MESSAGE_DEVICE_NAME:
+                    // save the connected device's name
+                    mConnectedDeviceName = msg.getData().getString(DEVICE_NAME);
+                    Toast.makeText(GameActivity.this, "Connected to "
+                            + mConnectedDeviceName, Toast.LENGTH_SHORT).show();
+                    break;
+                case MESSAGE_TOAST:
+                    Toast.makeText(GameActivity.this, msg.getData().getString(TOAST),
+                            Toast.LENGTH_SHORT).show();
+                    break;
+            }
+        }
+    };
+
+    private void connectDevice(boolean secure, String address) {
+        // Get the device MAC address
+        //String address = data.getExtras()
+        //        .getString(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
+        // Get the BluetoothDevice object
+        Log.d(TAG, "connectDevice");
+        BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
+        // Attempt to connect to the device
+        mChatService.connect(device, secure);
+    }
+
+    private void setupChat() {
+        Log.d(TAG, "setupChat()");
+
+        // Initialize the array adapter for the conversation thread
+        // = new ArrayAdapter<>(this, R.layout.message);
+
+        //mConversationView.setAdapter(mConversationArrayAdapter);
+
+        /*
+        // Initialize the compose field with a listener for the return key
+        mOutEditText.setOnEditorActionListener(mWriteListener);
+
+        // Initialize the send button with a listener that for click events
+        mSendButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                // Send a message using content of the edit text widget
+                View view = getView();
+                if (null != view) {
+                    TextView textView = (TextView) view.findViewById(R.id.edit_text_out);
+                    String message = textView.getText().toString();
+                    sendMessage(message);
+                }
+            }
+        });*/
+
+        // Initialize the BluetoothChatService to perform bluetooth connections
+        mChatService = new BluetoothService(this, mHandler);
+
+        // Initialize the buffer for outgoing messages
+        mOutStringBuffer = new StringBuffer("");
+    }
 }

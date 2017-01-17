@@ -12,6 +12,7 @@ import android.util.Log;
 import com.seventhmoon.tennisumpire.Data.InitData;
 
 import static com.seventhmoon.tennisumpire.Data.InitData.mAccelerometer;
+import static com.seventhmoon.tennisumpire.Data.InitData.mBluetoothAdapter;
 import static com.seventhmoon.tennisumpire.Data.InitData.mGravity;
 import static com.seventhmoon.tennisumpire.Data.InitData.mGyroscope;
 import static com.seventhmoon.tennisumpire.Data.InitData.mGyroscope_uncalibrated;
@@ -42,7 +43,7 @@ public class MainActivity extends WearableActivity {
 
         //setAmbientEnabled();
 
-        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (mBluetoothAdapter == null) {
             Log.d(TAG, "Device does not support Bluetooth");
         } else {
@@ -50,7 +51,7 @@ public class MainActivity extends WearableActivity {
 
                 Log.d(TAG, "Bluetooth is enabled");
             } else {
-
+                Log.e(TAG, "Bluetooth is not enabled");
 
             }
         }

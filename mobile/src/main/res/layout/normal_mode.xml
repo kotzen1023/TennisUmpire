@@ -17,18 +17,18 @@
         android:layout_centerHorizontal="true">
 
         <Button
-            android:text="@string/main_standalone"
+            android:text="@string/main_menu_new"
             android:layout_width="match_parent"
             android:layout_height="50dp"
-            android:id="@+id/btnStandalone"
+            android:id="@+id/btnNormalNewGame"
             android:layout_weight="1"
             android:textSize="50sp"/>
 
         <Button
-            android:text="@string/main_wear_mode"
+            android:text="@string/main_menu_continue"
             android:layout_width="match_parent"
             android:layout_height="50dp"
-            android:id="@+id/btnWearMode"
+            android:id="@+id/btnNormalContinue"
             android:layout_weight="1"
             android:textSize="50sp"/>
     </LinearLayout>

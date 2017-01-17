@@ -5,7 +5,7 @@ import android.bluetooth.BluetoothAdapter;
 import com.seventhmoon.tennisumpire.Bluetooth.BluetoothService;
 
 public class InitData {
-    public static boolean mode;
+    //public static boolean mode;
     /**
      * Name of the connected device
      */

@@ -121,6 +121,8 @@ public class GameActivity extends AppCompatActivity{
     private static String playerUp;
     private static String playerDown;
 
+    private static String mode;
+
     //private static long startTime;
     private static Handler handler;
     private static long time_use = 0;
@@ -161,6 +163,7 @@ public class GameActivity extends AppCompatActivity{
     private static byte second_serve_lost = 0;
 
     private MenuItem item_bluetooth;
+    private MenuItem item_stat;
 
 
     private SensorManager mSensorManager;
@@ -343,6 +346,7 @@ public class GameActivity extends AppCompatActivity{
         playerUp = intent.getStringExtra("PLAYER_UP");
         playerDown = intent.getStringExtra("PLAYER_DOWN");
         //duration = intent.getStringExtra("GAME_DURATION");
+        mode = intent.getStringExtra("WEAR_MODE");
 
         Log.e(TAG, "SET = "+set);
         //Log.e(TAG, "GAME = "+game);
@@ -1663,6 +1667,13 @@ public class GameActivity extends AppCompatActivity{
                 }
             }
         });
+
+        //if wear mode, init
+        if (mode.equals("true")) {
+            if (mBluetoothAdapter.isEnabled()) {
+                setupChat();
+            }
+        }
     }
 
 
@@ -3591,9 +3602,21 @@ public class GameActivity extends AppCompatActivity{
         getMenuInflater().inflate(R.menu.game_activity_menu, menu);
 
         item_bluetooth = menu.findItem(R.id.action_bluetooth);
+        item_stat = menu.findItem(R.id.action_show_stat);
 
-        if (mBluetoothAdapter == null)
-            item_bluetooth.setVisible(false);
+        //if (mBluetoothAdapter == null)
+
+        if (mode != null) {
+
+            if (mode.equals("true")) { //wear mode
+                item_bluetooth.setVisible(false);
+                item_stat.setVisible(false);
+            } else {
+                item_bluetooth.setVisible(true);
+                item_stat.setVisible(true);
+            }
+        }
+
 
 
         return true;
