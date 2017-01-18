@@ -1,28 +1,13 @@
 package com.seventhmoon.tennisumpire;
 
-
-
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
-import android.hardware.TriggerEvent;
-import android.hardware.TriggerEventListener;
 import android.os.Bundle;
 
 import android.os.Handler;
 
-import android.os.Message;
-import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -32,16 +17,10 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-
-import com.seventhmoon.tennisumpire.Bluetooth.BluetoothService;
-import com.seventhmoon.tennisumpire.Data.InitData;
 import com.seventhmoon.tennisumpire.Data.State;
 import com.seventhmoon.tennisumpire.Data.StateAction;
 
@@ -56,26 +35,16 @@ import java.util.Date;
 import java.util.Deque;
 import java.util.TimeZone;
 
-import static com.seventhmoon.tennisumpire.Bluetooth.Data.Constants.DEVICE_NAME;
-import static com.seventhmoon.tennisumpire.Bluetooth.Data.Constants.MESSAGE_DEVICE_NAME;
-import static com.seventhmoon.tennisumpire.Bluetooth.Data.Constants.MESSAGE_READ;
-import static com.seventhmoon.tennisumpire.Bluetooth.Data.Constants.MESSAGE_STATE_CHANGE;
-import static com.seventhmoon.tennisumpire.Bluetooth.Data.Constants.MESSAGE_TOAST;
-import static com.seventhmoon.tennisumpire.Bluetooth.Data.Constants.MESSAGE_WRITE;
-import static com.seventhmoon.tennisumpire.Bluetooth.Data.Constants.TOAST;
 import static com.seventhmoon.tennisumpire.Data.FileOperation.append_record;
 import static com.seventhmoon.tennisumpire.Data.FileOperation.check_file_exist;
 import static com.seventhmoon.tennisumpire.Data.FileOperation.clear_record;
 import static com.seventhmoon.tennisumpire.Data.FileOperation.read_record;
-import static com.seventhmoon.tennisumpire.Data.InitData.mBluetoothAdapter;
 import static com.seventhmoon.tennisumpire.Data.InitData.mChatService;
-import static com.seventhmoon.tennisumpire.Data.InitData.mConnectedDeviceName;
 import static com.seventhmoon.tennisumpire.Data.InitData.mOutStringBuffer;
 import static com.seventhmoon.tennisumpire.Data.StateAction.OPPT_SCORE;
 import static com.seventhmoon.tennisumpire.Data.StateAction.OPPT_SERVE;
 import static com.seventhmoon.tennisumpire.Data.StateAction.YOU_SCORE;
 import static com.seventhmoon.tennisumpire.Data.StateAction.YOU_SERVE;
-import static java.lang.Math.sqrt;
 
 
 public class GameActivity extends AppCompatActivity{
@@ -85,9 +54,6 @@ public class GameActivity extends AppCompatActivity{
     //        new SimpleDateFormat("HH:mm", Locale.TAIWAN);
 
     //private BoxInsetLayout mContainerView;
-    private static final int REQUEST_CONNECT_DEVICE_SECURE = 1;
-    private static final int REQUEST_CONNECT_DEVICE_INSECURE = 2;
-    private static final int REQUEST_ENABLE_BT = 3;
 
     private TextView gameUp;
     private TextView gameDown;
@@ -121,7 +87,7 @@ public class GameActivity extends AppCompatActivity{
     private static String playerUp;
     private static String playerDown;
 
-    private static String mode;
+    //private static String mode;
 
     //private static long startTime;
     private static Handler handler;
@@ -162,134 +128,13 @@ public class GameActivity extends AppCompatActivity{
     private static byte second_serve_won = 0;
     private static byte second_serve_lost = 0;
 
-    private MenuItem item_bluetooth;
     private MenuItem item_stat;
-
-
-    private SensorManager mSensorManager;
-    private Sensor mAccelerometer;
-    private Sensor mGravity;
-    private Sensor mGyroscope;
-    private Sensor mGyroscope_uncalibrated;
-    private Sensor mLinearAcceration;
-    private Sensor mRotationVector;
-    private Sensor mStepCounter;
-
-
-    private SensorEventListener accelerometerListener;
-
-    private static double PI = 3.1415926535897932384626433832795;
-    private static double gravity = 9806.65;
-
-    private static long previous_time = 0;
-    private static long current_time = 0;
-    private static double previous_accel = 0.0;
-    private static double current_accel = 0.0;
-
-    //private static double x_coordinate = 0.0;
-    //private static double y_coordinate = 0.0;
-    //private static double z_coordinate = 0.0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.game_layout);
         Log.d(TAG, "onCreate");
-
-        //mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-
-        if (mBluetoothAdapter.isEnabled()) {
-            if (mChatService == null) {
-                Log.d(TAG, "mChatService = null");
-                setupChat();
-            }
-        }
-
-        //sensor
-
-
-        mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-
-        mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        if (mAccelerometer != null) {
-            Log.e(TAG, "Has mAccelerometer sensor!");
-        }
-
-        mGravity = mSensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
-        if (mGravity != null) {
-            Log.e(TAG, "Has gravity sensor!");
-        }
-
-        mGyroscope = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
-        if (mGyroscope != null) {
-            Log.e(TAG, "Has gyroscope sensor!");
-        }
-
-        mGyroscope_uncalibrated = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE_UNCALIBRATED);
-        if (mGyroscope_uncalibrated != null) {
-            Log.e(TAG, "Has gyroscope uncalibrate sensor!");
-        }
-
-        mLinearAcceration = mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
-        if (mLinearAcceration != null) {
-            Log.e(TAG, "Has linear acceleration sensor!");
-        }
-
-        mRotationVector = mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
-        if (mRotationVector != null) {
-            Log.e(TAG, "Has rotation vector sensor!");
-        }
-
-        mStepCounter = mSensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER);
-        if (mStepCounter != null) {
-            Log.e(TAG, "Has step counter sensor!");
-        }
-
-
-
-        accelerometerListener = new SensorEventListener() {
-            @Override
-            public void onSensorChanged(SensorEvent event) {
-                current_time = System.currentTimeMillis();
-                current_accel = sqrt(event.values[0]*event.values[0]+event.values[1]*event.values[1]+event.values[2]*event.values[2]);
-                //Log.d(TAG, "accel = "+accel+" sec = "+(current_time-previous_time));
-                //Log.d(TAG, "System.currentTimeMillis() = "+System.currentTimeMillis());
-                //Log.d(TAG, "X: " + String.valueOf(event.values[0]));
-                //Log.d(TAG, "Y: " + String.valueOf(event.values[1]));
-                //Log.d(TAG, "Z: " + String.valueOf(event.values[2]));
-                double time = (((double)(current_time-previous_time))/1000);
-
-                //x_coordinate = x_coordinate + (event.values[0] * time * time)*100;
-                //y_coordinate = x_coordinate + (event.values[1] * time * time)*100;
-                //z_coordinate = z_coordinate + (event.values[2] * time * time)*100;
-
-
-
-                //double distance = Accel2mms(accel, time);
-                //if (distance > 0.1)
-                double accel_diff;
-                if (current_accel > previous_accel)
-                    accel_diff = current_accel - previous_accel;
-                else
-                    accel_diff = previous_accel - current_accel;
-
-                double distance = accel_diff * time * time;
-
-                if (accel_diff > 0.2)
-                   Log.d(TAG, "accel_diff = "+accel_diff+" sec = "+time+" distance = "+distance+" move = "+distance/accel_diff);
-                //Log.d(TAG, "x = "+x_coordinate+", y = "+y_coordinate+", z = "+z_coordinate);
-                previous_time = current_time;
-                previous_accel = current_accel;
-            }
-
-            @Override
-            public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
-
-            }
-        };
-
-        mSensorManager.registerListener(accelerometerListener, mLinearAcceration, SensorManager.SENSOR_DELAY_NORMAL);
 
         //for action bar
         ActionBar actionBar = getSupportActionBar();
@@ -346,7 +191,6 @@ public class GameActivity extends AppCompatActivity{
         playerUp = intent.getStringExtra("PLAYER_UP");
         playerDown = intent.getStringExtra("PLAYER_DOWN");
         //duration = intent.getStringExtra("GAME_DURATION");
-        mode = intent.getStringExtra("WEAR_MODE");
 
         Log.e(TAG, "SET = "+set);
         //Log.e(TAG, "GAME = "+game);
@@ -1668,12 +1512,6 @@ public class GameActivity extends AppCompatActivity{
             }
         });
 
-        //if wear mode, init
-        if (mode.equals("true")) {
-            if (mBluetoothAdapter.isEnabled()) {
-                setupChat();
-            }
-        }
     }
 
 
@@ -3565,6 +3403,11 @@ public class GameActivity extends AppCompatActivity{
             }
         }
 
+        Intent intent;
+        intent = new Intent(GameActivity.this, NormalModeActivity.class);
+        startActivity(intent);
+
+
         finish();
     }
 
@@ -3577,47 +3420,13 @@ public class GameActivity extends AppCompatActivity{
     public void onResume() {
         super.onResume();
         Log.d(TAG, "onResume()");
-        // Performing this check in onResume() covers the case in which BT was
-        // not enabled during onStart(), so we were paused to enable it...
-        // onResume() will be called when ACTION_REQUEST_ENABLE activity returns.
-
-        if (mBluetoothAdapter != null) {
-            if (mBluetoothAdapter.isEnabled()) {
-                if (mChatService != null) {
-                    // Only if the state is STATE_NONE, do we know that we haven't started already
-                    if (mChatService.getState() == BluetoothService.STATE_NONE) {
-                        // Start the Bluetooth chat services
-                        mChatService.start();
-                    }
-                } else {
-                    Log.d(TAG, "mChatService = null");
-                    setupChat();
-                }
-            }
-        }
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {
 
         getMenuInflater().inflate(R.menu.game_activity_menu, menu);
 
-        item_bluetooth = menu.findItem(R.id.action_bluetooth);
         item_stat = menu.findItem(R.id.action_show_stat);
-
-        //if (mBluetoothAdapter == null)
-
-        if (mode != null) {
-
-            if (mode.equals("true")) { //wear mode
-                item_bluetooth.setVisible(false);
-                item_stat.setVisible(false);
-            } else {
-                item_bluetooth.setVisible(true);
-                item_stat.setVisible(true);
-            }
-        }
-
-
 
         return true;
     }
@@ -3632,164 +3441,10 @@ public class GameActivity extends AppCompatActivity{
                 intent.putExtra("PLAYER_DOWN", playerDown);
                 startActivity(intent);
                 break;
-            case R.id.action_bluetooth:
-
-                if (!mBluetoothAdapter.isEnabled()) {
-                    intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                    startActivityForResult(intent, REQUEST_ENABLE_BT);
-                    // Otherwise, setup the chat session
-                } else if (mChatService == null) {
-                    setupChat();
-                } else {
-                    intent = new Intent(GameActivity.this, DeviceListActivity.class);
-                    startActivityForResult(intent, REQUEST_CONNECT_DEVICE_SECURE);
-                }
-
-
-                break;
 
             default:
                 break;
         }
         return true;
-    }
-
-    /**
-     * The Handler that gets information back from the BluetoothChatService
-     */
-    private final Handler mHandler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            //FragmentActivity activity = getActivity();
-            switch (msg.what) {
-                case MESSAGE_STATE_CHANGE:
-                    Log.d(TAG, "MESSAGE_STATE_CHANGE");
-                    switch (msg.arg1) {
-                        case BluetoothService.STATE_CONNECTED:
-                            Log.d(TAG, "STATE_CONNECTED");
-                            //setStatus(getString(R.string.title_connected_to, mConnectedDeviceName));
-                            //mConversationArrayAdapter.clear();
-                            break;
-                        case BluetoothService.STATE_CONNECTING:
-                            Log.d(TAG, "STATE_CONNECTING");
-                            //setStatus(R.string.title_connecting);
-                            break;
-                        case BluetoothService.STATE_LISTEN:
-                            Log.d(TAG, "STATE_LISTEN");
-                            break;
-                        case BluetoothService.STATE_NONE:
-                            Log.d(TAG, "STATE_NONE");
-                            //setStatus(R.string.title_not_connected);
-                            break;
-                    }
-                    break;
-                case MESSAGE_WRITE:
-                    Log.d(TAG, "MESSAGE_WRITE");
-                    byte[] writeBuf = (byte[]) msg.obj;
-                    // construct a string from the buffer
-                    String writeMessage = new String(writeBuf);
-                    //mConversationArrayAdapter.add("Me:  " + writeMessage);
-                    break;
-                case MESSAGE_READ:
-                    byte[] readBuf = (byte[]) msg.obj;
-                    // construct a string from the valid bytes in the buffer
-                    String readMessage = new String(readBuf, 0, msg.arg1);
-                    Log.d(TAG, "MESSAGE_READ : "+readMessage);
-                    //mConversationArrayAdapter.add(mConnectedDeviceName + ":  " + readMessage);
-                    break;
-                case MESSAGE_DEVICE_NAME:
-                    // save the connected device's name
-                    mConnectedDeviceName = msg.getData().getString(DEVICE_NAME);
-                    Toast.makeText(GameActivity.this, "Connected to "
-                            + mConnectedDeviceName, Toast.LENGTH_SHORT).show();
-                    break;
-                case MESSAGE_TOAST:
-                    Toast.makeText(GameActivity.this, msg.getData().getString(TOAST),
-                            Toast.LENGTH_SHORT).show();
-                    break;
-            }
-        }
-    };
-
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch (requestCode) {
-            case REQUEST_CONNECT_DEVICE_SECURE:
-                // When DeviceListActivity returns with a device to connect
-                if (resultCode == Activity.RESULT_OK) {
-                    connectDevice(data, true);
-                }
-                break;
-            case REQUEST_CONNECT_DEVICE_INSECURE:
-                // When DeviceListActivity returns with a device to connect
-                if (resultCode == Activity.RESULT_OK) {
-                    connectDevice(data, false);
-                }
-                break;
-            case REQUEST_ENABLE_BT:
-                // When the request to enable Bluetooth returns
-                if (resultCode == Activity.RESULT_OK) {
-                    // Bluetooth is now enabled, so set up a chat session
-                    setupChat();
-                } else {
-                    // User did not enable Bluetooth or an error occurred
-                    Log.d(TAG, "BT not enabled");
-                    Toast.makeText(this, "Bluetooth was not enabled.",
-                            Toast.LENGTH_SHORT).show();
-                }
-        }
-    }
-
-    /**
-     * Establish connection with other divice
-     *
-     * @param data   An {@link Intent} with {@link DeviceListActivity#EXTRA_DEVICE_ADDRESS} extra.
-     * @param secure Socket Security type - Secure (true) , Insecure (false)
-     */
-    private void connectDevice(Intent data, boolean secure) {
-        // Get the device MAC address
-        String address = data.getExtras()
-                .getString(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
-        // Get the BluetoothDevice object
-        BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
-        // Attempt to connect to the device
-        mChatService.connect(device, secure);
-    }
-
-    private void setupChat() {
-        Log.d(TAG, "setupChat()");
-
-        // Initialize the array adapter for the conversation thread
-        // = new ArrayAdapter<>(this, R.layout.message);
-
-        //mConversationView.setAdapter(mConversationArrayAdapter);
-
-        /*
-        // Initialize the compose field with a listener for the return key
-        mOutEditText.setOnEditorActionListener(mWriteListener);
-
-        // Initialize the send button with a listener that for click events
-        mSendButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                // Send a message using content of the edit text widget
-                View view = getView();
-                if (null != view) {
-                    TextView textView = (TextView) view.findViewById(R.id.edit_text_out);
-                    String message = textView.getText().toString();
-                    sendMessage(message);
-                }
-            }
-        });*/
-
-        // Initialize the BluetoothChatService to perform bluetooth connections
-        mChatService = new BluetoothService(this, mHandler);
-
-        // Initialize the buffer for outgoing messages
-        mOutStringBuffer = new StringBuffer("");
-    }
-
-    double Accel2mms(double accel, double freq){
-        double result = 0;
-        result = (gravity*accel)/(2*PI*freq);
-        return result;
     }
 }

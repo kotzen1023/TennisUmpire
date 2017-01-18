@@ -107,8 +107,8 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent;
                 if (mBluetoothAdapter.isEnabled()) {
-                    intent = new Intent(MainActivity.this, GameActivity.class);
-                    intent.putExtra("WEAR_MODE", "true");
+                    intent = new Intent(MainActivity.this, WearModeGameActivity.class);
+                    //intent.putExtra("WEAR_MODE", "true");
                     startActivity(intent);
                     finish();
                 } else {

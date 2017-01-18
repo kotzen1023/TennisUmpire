@@ -1,38 +1,41 @@
 package com.seventhmoon.tennisumpire;
 
 
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.wearable.activity.WearableActivity;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.seventhmoon.tennisumpire.Bluetooth.BluetoothService;
-import com.seventhmoon.tennisumpire.Data.InitData;
 import com.seventhmoon.tennisumpire.Data.State;
+import com.seventhmoon.tennisumpire.Data.StateAction;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayDeque;
+
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Deque;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 import java.util.TimeZone;
 
 import static com.seventhmoon.tennisumpire.Bluetooth.Data.Constants.DEVICE_NAME;
@@ -42,87 +45,169 @@ import static com.seventhmoon.tennisumpire.Bluetooth.Data.Constants.MESSAGE_STAT
 import static com.seventhmoon.tennisumpire.Bluetooth.Data.Constants.MESSAGE_TOAST;
 import static com.seventhmoon.tennisumpire.Bluetooth.Data.Constants.MESSAGE_WRITE;
 import static com.seventhmoon.tennisumpire.Bluetooth.Data.Constants.TOAST;
-import static com.seventhmoon.tennisumpire.Data.InitData.accelerometerListener;
+import static com.seventhmoon.tennisumpire.Data.FileOperation.append_record;
+import static com.seventhmoon.tennisumpire.Data.FileOperation.clear_record;
 import static com.seventhmoon.tennisumpire.Data.InitData.mBluetoothAdapter;
 import static com.seventhmoon.tennisumpire.Data.InitData.mChatService;
 import static com.seventhmoon.tennisumpire.Data.InitData.mConnectedDeviceName;
-import static com.seventhmoon.tennisumpire.Data.InitData.mLinearAcceration;
 import static com.seventhmoon.tennisumpire.Data.InitData.mOutStringBuffer;
-import static com.seventhmoon.tennisumpire.Data.InitData.mRotationVector;
-import static com.seventhmoon.tennisumpire.Data.InitData.mSensorManager;
-import static com.seventhmoon.tennisumpire.Data.InitData.rotationVectorListener;
-import static java.lang.Math.sqrt;
 
+public class WearModeGameActivity extends AppCompatActivity {
+    private static final String TAG = WearModeGameActivity.class.getName();
 
-public class GameActivity extends WearableActivity {
-    private static final String TAG = GameActivity.class.getName();
+    private static final int REQUEST_CONNECT_DEVICE_SECURE = 1;
+    private static final int REQUEST_CONNECT_DEVICE_INSECURE = 2;
+    private static final int REQUEST_ENABLE_BT = 3;
 
-    //private static final SimpleDateFormat AMBIENT_DATE_FORMAT =
-    //        new SimpleDateFormat("HH:mm", Locale.TAIWAN);
-
-    //private BoxInsetLayout mContainerView;
-
+    LinearLayout nameLayout;
     private TextView gameUp;
     private TextView gameDown;
     private TextView pointUp;
     private TextView pointDown;
     private ImageView imgServeUp;
     private ImageView imgServeDown;
+    private LinearLayout setLayout;
+    //private LinearLayout nameLayout;
+    private TextView setUp;
+    private TextView setDown;
+    private ImageView imgWinCheckUp;
+    private ImageView imgWinCheckDown;
+
+    private ImageView imgPlayOrPause;
 
     //private TextView mClockView;
-
-
-    private TextView textCurrentTime;
-    private TextView textGameTime;
-    private ImageView imgPlayOrPause;
 
     private static String set;
     //private static String game;
     private static String tiebreak;
     private static String deuce;
     private static String serve;
-    private static long startTime;
+    //private static String duration;
+
+    private static String filename;
+    private static String playerUp;
+    private static String playerDown;
+
+    private static String mode;
+
+    //private static long startTime;
     private static Handler handler;
     private static long time_use = 0;
+
+    public static Deque<State> stack = new ArrayDeque<>();
+
+    //public static File RootDirectory = new File("/");
+
     private static boolean is_pause = false;
 
-    private static Deque<State> stack = new ArrayDeque<>();
+    ProgressDialog loadDialog = null;
+
+    //for state
+    //private static boolean is_ace = false;
+    //private static boolean is_double_fault = false;
+    private static boolean is_second_serve = false;
+    private static boolean is_break_point = false;
+    //private static boolean is_unforced_error = false;
+    //private static boolean is_forehand_winner = false;
+    //private static boolean is_backhand_winner = false;
+    //private static boolean is_forehand_volley = false;
+    //private static boolean is_backhand_volley = false;
+    private static byte ace_count = 0;
+    private static byte double_faults_count = 0;
+    private static short unforced_errors_count = 0;
+    private static short forehand_winner_count = 0;
+    private static short backhand_winner_count = 0;
+    private static short forehand_volley_count = 0;
+    private static short backhand_volley_count = 0;
+    private static byte foul_to_lose_count = 0;
+    private static short first_serve_count = 0;
+    private static short first_serve_miss = 0;
+    private static short second_serve_count = 0;
+
+    private static byte first_serve_won = 0;
+    private static byte first_serve_lost = 0;
+    private static byte second_serve_won = 0;
+    private static byte second_serve_lost = 0;
+
+    private MenuItem item_bluetooth;
+    private MenuItem item_stat;
+
+
+
+
+
+    private SensorEventListener accelerometerListener;
+
+    private static double PI = 3.1415926535897932384626433832795;
+    private static double gravity = 9806.65;
 
     private static long previous_time = 0;
     private static long current_time = 0;
-    private static double x_previous_velocity = 0.0;
-    private static double y_previous_velocity = 0.0;
-    private static double x_current_velocity = 0.0;
-    private static double y_current_velocity = 0.0;
     private static double previous_accel = 0.0;
     private static double current_accel = 0.0;
 
-    private static long x_coordinate_current = 0;
-    private static long y_coordinate_current = 0;
-    private static long x_coordinate_previous = 0;
-    private static long y_coordinate_previous = 0;
-    private static double distance = 0;
+    //private static double x_coordinate = 0.0;
+    //private static double y_coordinate = 0.0;
+    //private static double z_coordinate = 0.0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.game_layout);
+        setContentView(R.layout.wear_mode_game_activity);
+        Log.d(TAG, "onCreate");
 
-        InitData.is_running = true;
+        //mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+        if (mBluetoothAdapter.isEnabled()) {
+            if (mChatService == null) {
+                Log.d(TAG, "mChatService = null");
+                setupChat();
+            }
+        }
+
+        //for action bar
+        ActionBar actionBar = getSupportActionBar();
+
+        if (actionBar != null) {
+
+            actionBar.setDisplayUseLogoEnabled(true);
+            //actionBar.setDisplayShowHomeEnabled(true);
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setHomeAsUpIndicator(R.drawable.ball_icon);
+        }
+        //is_ace = false;
+        //is_double_fault = false;
+        is_second_serve = false;
+        is_break_point = false;
+        //is_unforced_error = false;
+        //is_forehand_winner = false;
+        //is_backhand_winner = false;
+        //is_forehand_volley = false;
+        //is_backhand_volley = false;
+        first_serve_count = 0;
+        first_serve_miss = 0;
+        second_serve_count = 0;
+
+        first_serve_won = 0;
+        first_serve_lost = 0;
+        second_serve_won = 0;
+        second_serve_lost = 0;
 
         Button btnYouScore;
-        ImageView btnImgBack;
+        Button btnBack;
         Button btnOpptScore;
-        ImageView btnImgReset;
+        Button btnReset;
+        Button btnSave;
+        Button btnLoad;
 
-        setAmbientEnabled();
+        //LinearLayout nameLayout;
 
         handler = new Handler();
 
-        startTime = System.currentTimeMillis();
+        //startTime = System.currentTimeMillis();
 
-        handler.removeCallbacks(updateTimer);
-        handler.postDelayed(updateTimer, 1000);
+        //handler.removeCallbacks(updateTimer);
+        //handler.postDelayed(updateTimer, 1000);
 
         Intent intent = getIntent();
 
@@ -131,10 +216,21 @@ public class GameActivity extends WearableActivity {
         deuce = intent.getStringExtra("SETUP_DEUCE");
         serve = intent.getStringExtra("SETUP_SERVE");
 
+        filename = intent.getStringExtra("FILE_NAME");
+        playerUp = intent.getStringExtra("PLAYER_UP");
+        playerDown = intent.getStringExtra("PLAYER_DOWN");
+        //duration = intent.getStringExtra("GAME_DURATION");
+        mode = intent.getStringExtra("WEAR_MODE");
+
         Log.e(TAG, "SET = "+set);
+        //Log.e(TAG, "GAME = "+game);
         Log.e(TAG, "TIEBREAK = "+tiebreak);
         Log.e(TAG, "DEUCE = "+deuce);
         Log.e(TAG, "SERVE = "+serve);
+
+        Log.e(TAG, "filename = "+filename);
+        Log.e(TAG, "playerUp = "+playerUp);
+        Log.e(TAG, "playerDown = "+playerDown);
 
         //mContainerView = (BoxInsetLayout) findViewById(R.id.container);
 
@@ -146,10 +242,18 @@ public class GameActivity extends WearableActivity {
         imgServeUp = (ImageView) findViewById(R.id.imageViewServeUp);
         imgServeDown = (ImageView) findViewById(R.id.imageViewServeDown);
 
-        textCurrentTime = (TextView) findViewById(R.id.currentTime);
-        textGameTime = (TextView) findViewById(R.id.gameTime);
+        setLayout = (LinearLayout) findViewById(R.id.setLayout);
+        nameLayout = (LinearLayout) findViewById(R.id.nameLayout);
+        setUp = (TextView) findViewById(R.id.textViewSetUp);
+        setDown = (TextView) findViewById(R.id.textViewSetDown);
 
-        imgPlayOrPause = (ImageView) findViewById(R.id.imagePlayOrPause);
+        imgWinCheckUp = (ImageView) findViewById(R.id.imageWincheckUp);
+        imgWinCheckDown = (ImageView) findViewById(R.id.imageWincheckDown);
+
+        imgPlayOrPause = (ImageView) findViewById(R.id.imageViewPlayOrPause);
+
+        //mConversationView = (ListView) findViewById(R.id.);
+
 
         //init score board
         gameUp.setText("0");
@@ -157,424 +261,99 @@ public class GameActivity extends WearableActivity {
         pointUp.setText("0");
         pointDown.setText("0");
 
-        if (serve.equals("0")) { //you server first
+        if (serve != null) {
+            if (serve.equals("0")) { //you serve first
+                imgServeUp.setVisibility(View.INVISIBLE);
+                imgServeDown.setVisibility(View.VISIBLE);
+            } else {
+                imgServeUp.setVisibility(View.VISIBLE);
+                imgServeDown.setVisibility(View.INVISIBLE);
+            }
+        } else {
+            serve = "0";
             imgServeUp.setVisibility(View.INVISIBLE);
             imgServeDown.setVisibility(View.VISIBLE);
-        } else {
-            imgServeUp.setVisibility(View.VISIBLE);
-            imgServeDown.setVisibility(View.INVISIBLE);
         }
 
-
+        if (playerUp != null && playerDown != null) {
+            if (playerUp.equals(""))
+                playerUp = "Player1";
+            if (playerDown.equals(""))
+                playerDown = "Player2";
+            nameLayout.setVisibility(View.VISIBLE);
+        } else {
+            if (playerUp == null)
+                playerUp = "Player1";
+            if (playerDown == null)
+                playerDown = "Player2";
+            nameLayout.setVisibility(View.VISIBLE);
+        }
 
         //mClockView = (TextView) findViewById(R.id.clock);
 
-        btnYouScore = (Button) findViewById(R.id.btnYouScore);
+        /*btnYouScore = (Button) findViewById(R.id.btnYouScore);
         btnOpptScore = (Button) findViewById(R.id.btnOpptScore);
-        btnImgBack = (ImageView) findViewById(R.id.btnImgBack);
-        btnImgReset = (ImageView) findViewById(R.id.btnImgReset);
+        btnBack = (Button) findViewById(R.id.btnBack);
+        btnReset = (Button) findViewById(R.id.btnReset);
+        btnSave = (Button) findViewById(R.id.btnSave);
+        btnLoad = (Button) findViewById(R.id.btnLoad);*/
 
-        btnImgBack.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+        TextView textViewPlayerUp = (TextView) findViewById(R.id.textViewPlayerUp);
+        final TextView textViewPlayerDown = (TextView) findViewById(R.id.textViewPlayerDown);
 
-                is_pause = false;
-                imgPlayOrPause.setVisibility(View.VISIBLE);
-                imgPlayOrPause.setImageResource(R.drawable.ic_pause_white_48dp);
+        textViewPlayerUp.setText(playerUp);
+        textViewPlayerDown.setText(playerDown);
 
-                if (stack.isEmpty()) {
-                    Log.d(TAG, "stack is empty!");
-
-                } else {
-                    //send back
-                    String message = "back";
-                    byte[] send = message.getBytes();
-                    if (mChatService != null) {
-                        mChatService.write(send);
-
-                        // Reset out string buffer to zero and clear the edit text field
-                        mOutStringBuffer.setLength(0);
-                    }
-
-                    byte current_set;
-                    //stack.pop();
-                    if (stack.pop() != null) { //pop out current
-                        State back_state = stack.peek();
-                        if (back_state != null) {
-                            current_set = back_state.getCurrent_set();
-
-                            gameUp.setText(String.valueOf(back_state.getSet_game_up(current_set)));
-                            gameDown.setText(String.valueOf(back_state.getSet_game_down(current_set)));
-
-                            if (back_state.isServe()) {
-                                imgServeUp.setVisibility(View.INVISIBLE);
-                                imgServeDown.setVisibility(View.VISIBLE);
-                            } else {
-                                imgServeUp.setVisibility(View.VISIBLE);
-                                imgServeDown.setVisibility(View.INVISIBLE);
-                            }
-
-                            if (!back_state.isInTiebreak()) { //not in tiebreak
-                                if (back_state.getSet_point_up(current_set) == 1) {
-                                    pointUp.setText(String.valueOf(15));
-                                } else if (back_state.getSet_point_up(current_set) == 2) {
-                                    pointUp.setText(String.valueOf(30));
-                                } else if (back_state.getSet_point_up(current_set) == 3) {
-                                    pointUp.setText(String.valueOf(40));
-                                } else if (back_state.getSet_point_up(current_set) == 4) {
-                                    String msg = String.valueOf(40)+"A";
-                                    pointUp.setText(msg);
-                                } else {
-                                    pointUp.setText("0");
-                                }
-                            } else { //tie break;
-                                pointUp.setText(String.valueOf(back_state.getSet_point_up(current_set)));
-                            }
-
-                            if (!back_state.isInTiebreak()) { //not in tiebreak
-                                if (back_state.getSet_point_down(current_set) == 1) {
-                                    pointDown.setText(String.valueOf(15));
-                                } else if (back_state.getSet_point_down(current_set) == 2) {
-                                    pointDown.setText(String.valueOf(30));
-                                } else if (back_state.getSet_point_down(current_set) == 3) {
-                                    pointDown.setText(String.valueOf(40));
-                                } else if (back_state.getSet_point_down(current_set) == 4) {
-                                    String msg = String.valueOf(40)+"A";
-                                    pointDown.setText(msg);
-                                } else {
-                                    pointDown.setText("0");
-                                }
-                            } else {
-                                pointDown.setText(String.valueOf(back_state.getSet_point_down(current_set)));
-                            }
-
-                            Log.d(TAG, "########## back state start ##########");
-                            Log.d(TAG, "current set : " + back_state.getCurrent_set());
-                            Log.d(TAG, "Serve : " + back_state.isServe());
-                            Log.d(TAG, "In tiebreak : " + back_state.isInTiebreak());
-                            Log.d(TAG, "Finish : " + back_state.isFinish());
-
-                            int set_limit;
-                            switch (set)
-                            {
-                                case "0":
-                                    set_limit = 1;
-                                    break;
-                                case "1":
-                                    set_limit = 3;
-                                    break;
-                                case "2":
-                                    set_limit = 5;
-                                    break;
-                                default:
-                                    set_limit = 1;
-                                    break;
-                            }
-
-
-                            for (int i = 1; i <= set_limit; i++) {
-                                Log.d(TAG, "================================");
-                                Log.d(TAG, "[set " + i + "]");
-                                Log.d(TAG, "[Game : " + back_state.getSet_game_up((byte) i) + " / " + back_state.getSet_game_down((byte) i) + "]");
-                                Log.d(TAG, "[Point : " + back_state.getSet_point_up((byte) i) + " / " + back_state.getSet_point_down((byte) i) + "]");
-                                Log.d(TAG, "[tiebreak : " + back_state.getSet_tiebreak_point_up((byte) i) + " / " + back_state.getSet_tiebreak_point_down((byte) i) + "]");
-                            }
-
-
-                            Log.d(TAG, "########## back state end ##########");
-
-                        } else {
-                            gameUp.setText("0");
-                            gameDown.setText("0");
-
-                            imgServeUp.setVisibility(View.INVISIBLE);
-                            imgServeDown.setVisibility(View.INVISIBLE);
-
-                            pointUp.setText("0");
-                            pointDown.setText("0");
-
-                            if (serve.equals("0")) { //you server first
-                                imgServeUp.setVisibility(View.INVISIBLE);
-                                imgServeDown.setVisibility(View.VISIBLE);
-                            } else {
-                                imgServeUp.setVisibility(View.VISIBLE);
-                                imgServeDown.setVisibility(View.INVISIBLE);
-                            }
-                        }
-                    }
-                }
-            }
-        });
-
-        btnYouScore.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                calculateScore(true);
-                String message = "you";
-                byte[] send = message.getBytes();
-                if (mChatService != null) {
-                    mChatService.write(send);
-
-                    // Reset out string buffer to zero and clear the edit text field
-                    mOutStringBuffer.setLength(0);
-                }
-            }
-        });
-
-        btnOpptScore.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                calculateScore(false);
-                String message = "oppt";
-                byte[] send = message.getBytes();
-                if (mChatService != null) {
-                    mChatService.write(send);
-
-                    // Reset out string buffer to zero and clear the edit text field
-                    mOutStringBuffer.setLength(0);
-                }
-            }
-        });
-
-        btnImgReset.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                time_use = 0;
-                stack.clear();
-                handler.removeCallbacks(updateTimer);
-
-                //send reset
-                String message = "reset";
-                byte[] send = message.getBytes();
-                if (mChatService != null) {
-                    mChatService.write(send);
-
-                    // Reset out string buffer to zero and clear the edit text field
-                    mOutStringBuffer.setLength(0);
-                }
-
-                Intent intent = new Intent(GameActivity.this, SetupMain.class);
-                startActivity(intent);
-                finish();
-            }
-        });
-
-        imgPlayOrPause.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (!is_pause) {
-                    is_pause = true;
-                    imgPlayOrPause.setImageResource(R.drawable.ic_play_arrow_white_48dp);
-                    handler.removeCallbacks(updateTimer);
-                } else {
-                    is_pause = false;
-                    imgPlayOrPause.setImageResource(R.drawable.ic_pause_white_48dp);
-                    handler.removeCallbacks(updateTimer);
-                    handler.postDelayed(updateTimer, 1000);
-                }
-            }
-        });
-
-        if (mBluetoothAdapter.isEnabled()) {
-
-            if (mChatService == null) {
-                setupChat();
-            }
-
-            if (mChatService != null) {
-                // Get a set of currently paired devices
-                Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
-
-                String address = "";
-
-                if (pairedDevices.size() > 0) {
-                    for (BluetoothDevice devices : pairedDevices) {
-                        Log.d(TAG, "device address : "+devices.getAddress());
-                        address = devices.getAddress();
-                        break;
-                    }
-
-                    if (!address.equals("")) {
-                        connectDevice(true, address);
-                    }
-                } else {
-                    Log.e(TAG, "No paired devices");
-                }
-            }
-        }
-
-        //sensor
-        /*
-        previous_time = 0;
-        current_time = 0;
-        x_previous_velocity = 0.0;
-        y_previous_velocity = 0.0;
-        x_current_velocity = 0.0;
-        y_current_velocity = 0.0;
-        previous_accel = 0.0;
-        current_accel = 0.0;
-
-        x_coordinate_current = 0;
-        y_coordinate_current = 0;
-
-        distance = 0.0;
-
-
-        accelerometerListener = new SensorEventListener() {
-            @Override
-            public void onSensorChanged(SensorEvent event) {
-                double time;
-
-                current_time = System.currentTimeMillis();
-                current_accel = sqrt(event.values[0]*event.values[0]+event.values[1]*event.values[1]);
-
-                if (previous_time != 0) {
-                    time = (((double) (current_time - previous_time)) / 1000);
-
-                    x_coordinate_current = (long)(event.values[0] * time * time * 100);
-                    y_coordinate_current = (long)(event.values[1] * time * time * 100);
-                    x_current_velocity =  (x_coordinate_current - x_coordinate_previous)/time ;
-                    y_current_velocity =  (y_coordinate_current - y_coordinate_previous)/time;
-
-                    double velocity = current_accel * time;
-                    if (x_coordinate_current != 0 && y_coordinate_current != 0) {
-                        //distance = distance + velocity * time;
-                        distance = distance + sqrt(x_current_velocity*x_current_velocity+y_current_velocity*y_current_velocity) * time;
-                        //Log.d(TAG, "distance = "+distance);
-                    }
-
-                    String logMsg = "(" +  x_coordinate_current + ", " +  y_coordinate_current +
-                            ")" +
-                            " vX=" +
-                            String.format("%.3f", x_current_velocity) +
-                            " vY=" +
-                            String.format("%.3f", y_current_velocity) +
-                            " aX=" +
-                            String.format("%.3f", event.values[0] * 100) +
-                            " aY=" +
-                            String.format("%.3f", event.values[1] * 100) +
-                            " sec = " +
-                            time +
-                            " d = " +
-                            String.format("%.2f", distance / 100.0)+"M" ;
-
-                    Log.d(TAG, logMsg);
-
-                    byte[] send = logMsg.getBytes();
-                    if (mChatService != null) {
-                        mChatService.write(send);
-
-                        // Reset out string buffer to zero and clear the edit text field
-                        mOutStringBuffer.setLength(0);
-                    }
-                }
-
-                previous_time = current_time;
-                previous_accel = current_accel;
-                //x_previous_velocity = x_current_velocity;
-                //y_previous_velocity = y_current_velocity;
-                x_coordinate_previous = x_coordinate_current;
-                y_coordinate_previous = y_coordinate_current;
-            }
-
-            @Override
-            public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
-
-            }
-        };
-
-        mSensorManager.registerListener(accelerometerListener, mLinearAcceration, SensorManager.SENSOR_DELAY_NORMAL);
-
-        rotationVectorListener = new SensorEventListener() {
-
-            @Override
-            public void onSensorChanged(SensorEvent event) {
-                Log.d(TAG, "x : "+event.values[0]+" y : "+event.values[1]+" z : "+event.values[2]+" scalar : "+event.values[3]);
-            }
-
-            @Override
-            public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
-            }
-        };
-
-        mSensorManager.registerListener(rotationVectorListener, mRotationVector, SensorManager.SENSOR_DELAY_NORMAL);
-        */
     }
 
-    @Override
-    protected void onPause() {
-        Log.d(TAG, "onPause");
-        super.onPause();
 
-        //is_pause = true;
-        //imgPlayOrPause.setImageResource(R.drawable.ic_play_arrow_white_48dp);
-        //handler.removeCallbacks(updateTimer);
-    }
-
-    @Override
-    protected void onResume() {
-        Log.d(TAG, "onResume");
-        super.onResume();
-
-        //is_pause = false;
-        //imgPlayOrPause.setImageResource(R.drawable.ic_pause_white_48dp);
-        //handler.removeCallbacks(updateTimer);
-        //handler.postDelayed(updateTimer, 1000);
-    }
-
-    @Override
-    public void onEnterAmbient(Bundle ambientDetails) {
-        super.onEnterAmbient(ambientDetails);
-        updateDisplay();
-    }
-
-    @Override
-    public void onUpdateAmbient() {
-        super.onUpdateAmbient();
-        updateDisplay();
-    }
-
-    @Override
-    public void onExitAmbient() {
-        updateDisplay();
-        super.onExitAmbient();
-    }
-
-    private void updateDisplay() {
-        /*if (isAmbient()) {
-            mContainerView.setBackgroundColor(getResources().getColor(android.R.color.black));
-            //mTextView.setTextColor(getResources().getColor(android.R.color.white));
-            mClockView.setTextColor(getResources().getColor(android.R.color.black));
-            mClockView.setVisibility(View.VISIBLE);
-
-            //mClockView.setText(AMBIENT_DATE_FORMAT.format(new Date()));
-        } else {
-            mContainerView.setBackground(null);
-            mClockView.setTextColor(getResources().getColor(android.R.color.black));
-            mClockView.setVisibility(View.GONE);
-        }*/
-
-
-    }
 
     @Override
     protected void onDestroy() {
         Log.d(TAG, "onDestroy");
-        time_use = 0;
-        stack.clear();
-        handler.removeCallbacks(updateTimer);
-        InitData.is_running = false;
+
 
         mChatService.stop();
         mChatService = null;
 
-        //mSensorManager.unregisterListener(accelerometerListener);
-        //mSensorManager.unregisterListener(rotationVectorListener);
-
         super.onDestroy();
 
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.d(TAG, "onResume()");
+        // Performing this check in onResume() covers the case in which BT was
+        // not enabled during onStart(), so we were paused to enable it...
+        // onResume() will be called when ACTION_REQUEST_ENABLE activity returns.
+
+        if (mBluetoothAdapter != null) {
+            if (mBluetoothAdapter.isEnabled()) {
+                if (mChatService != null) {
+                    // Only if the state is STATE_NONE, do we know that we haven't started already
+                    if (mChatService.getState() == BluetoothService.STATE_NONE) {
+                        // Start the Bluetooth chat services
+                        mChatService.start();
+                    }
+                } else {
+                    Log.d(TAG, "mChatService = null");
+                    setupChat();
+                }
+            }
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        Intent intent = new Intent(WearModeGameActivity.this, MainActivity.class);
+        startActivity(intent);
+        finish();
     }
 
     private void calculateScore(boolean you_score) {
@@ -624,9 +403,9 @@ public class GameActivity extends WearableActivity {
 
             if (current_state.isFinish()) {
                 Log.d(TAG, "*** Game is Over ***");
-                handler.removeCallbacks(updateTimer);
+                //handler.removeCallbacks(updateTimer);
 
-                Intent intent = new Intent(GameActivity.this, ResultActivity.class);
+                Intent intent = new Intent(WearModeGameActivity.this, ResultActivity.class);
                 intent.putExtra("SET1_GAME_UP",   String.valueOf(current_state.getSet_game_up((byte)0x01)));
                 intent.putExtra("SET1_GAME_DOWN", String.valueOf(current_state.getSet_game_down((byte)0x01)));
                 intent.putExtra("SET2_GAME_UP",   String.valueOf(current_state.getSet_game_up((byte)0x02)));
@@ -654,12 +433,7 @@ public class GameActivity extends WearableActivity {
 
                 startActivity(intent);
             } else { //not finish
-                if (is_pause) { //
-                    is_pause = false;
-                    imgPlayOrPause.setImageResource(R.drawable.ic_pause_white_48dp);
-                    handler.removeCallbacks(updateTimer);
-                    handler.postDelayed(updateTimer, 1000);
-                }
+
                 Log.d(TAG, "*** Game is running ***");
                 if (you_score) {
                     Log.d(TAG, "=== I score start ===");
@@ -870,51 +644,46 @@ public class GameActivity extends WearableActivity {
         } else {
             Log.d(TAG, "Stack is empty!");
 
-            if (is_pause) { //
-                is_pause = false;
-                imgPlayOrPause.setImageResource(R.drawable.ic_pause_white_48dp);
-                handler.removeCallbacks(updateTimer);
-                handler.postDelayed(updateTimer, 1000);
-            }
+
             Log.d(TAG, "*** Game is running ***");
             if (you_score) {
                 Log.d(TAG, "=== I score start ===");
 
                 //if (stack.isEmpty()) { //the state stack is empty
-                    new_state = new State();
-                    Log.d(TAG, "==>[Stack empty]");
-                    if (serve.equals("0"))
-                        new_state.setServe(true);
-                    else
-                        new_state.setServe(false);
+                new_state = new State();
+                Log.d(TAG, "==>[Stack empty]");
+                if (serve.equals("0"))
+                    new_state.setServe(true);
+                else
+                    new_state.setServe(false);
 
-                    //set current set = 1
-                    new_state.setCurrent_set((byte) 0x01);
+                //set current set = 1
+                new_state.setCurrent_set((byte) 0x01);
 
-                    new_state.setSet_point_down((byte) 0x01, (byte) 0x01);
-                    //new_state.setSet_1_point_down((byte)0x01);
+                new_state.setSet_point_down((byte) 0x01, (byte) 0x01);
+                //new_state.setSet_1_point_down((byte)0x01);
 
 
-                    //Log.e(TAG, "get_set_1_point_down = "+new_state.getSet_1_point_down()+", isServe ? "+ (new_state.isServe() ? "YES" : "NO"));
+                //Log.e(TAG, "get_set_1_point_down = "+new_state.getSet_1_point_down()+", isServe ? "+ (new_state.isServe() ? "YES" : "NO"));
                 //}
 
                 Log.d(TAG, "=== I score end ===");
             } else {
                 Log.d(TAG, "=== Oppt score start ===");
                 //if (stack.isEmpty()) { //the state stack is empty
-                    new_state = new State();
-                    Log.d(TAG, "==>[Stack empty]");
-                    if (serve.equals("0"))
-                        new_state.setServe(true);
-                    else
-                        new_state.setServe(false);
+                new_state = new State();
+                Log.d(TAG, "==>[Stack empty]");
+                if (serve.equals("0"))
+                    new_state.setServe(true);
+                else
+                    new_state.setServe(false);
 
-                    //set current set = 1
-                    new_state.setCurrent_set((byte) 0x01);
+                //set current set = 1
+                new_state.setCurrent_set((byte) 0x01);
 
-                    new_state.setSet_point_up((byte) 0x01, (byte) 0x01);
+                new_state.setSet_point_up((byte) 0x01, (byte) 0x01);
 
-                    //Log.e(TAG, "get_set_1_point_up = "+new_state.getSet_1_point_up()+", isServe ? "+ (new_state.isServe() ? "YES" : "NO"));
+                //Log.e(TAG, "get_set_1_point_up = "+new_state.getSet_1_point_up()+", isServe ? "+ (new_state.isServe() ? "YES" : "NO"));
 
                 //}
                 Log.d(TAG, "=== Oppt score end ===");
@@ -1306,9 +1075,6 @@ public class GameActivity extends WearableActivity {
                 if (setsWinUp == 1 || setsWinDown == 1) {
                     new_state.setFinish(true);
                 }
-                handler.removeCallbacks(updateTimer);
-                is_pause = false;
-                imgPlayOrPause.setVisibility(View.GONE);
                 break;
             case "1":
                 if (setsWinUp == 2 || setsWinDown == 2) {
@@ -1317,9 +1083,6 @@ public class GameActivity extends WearableActivity {
                     current_set++;
                     new_state.setCurrent_set(current_set);
                 }
-                handler.removeCallbacks(updateTimer);
-                is_pause = false;
-                imgPlayOrPause.setVisibility(View.GONE);
                 break;
             case "2":
                 if (setsWinUp == 3 || setsWinDown == 3) {
@@ -1328,17 +1091,11 @@ public class GameActivity extends WearableActivity {
                     current_set++;
                     new_state.setCurrent_set(current_set);
                 }
-                handler.removeCallbacks(updateTimer);
-                is_pause = false;
-                imgPlayOrPause.setVisibility(View.GONE);
                 break;
             default:
                 if (setsWinUp == 1 || setsWinDown == 1) {
                     new_state.setFinish(true);
                 }
-                handler.removeCallbacks(updateTimer);
-                is_pause = false;
-                imgPlayOrPause.setVisibility(View.GONE);
                 break;
         }
 
@@ -1347,37 +1104,21 @@ public class GameActivity extends WearableActivity {
         Log.d(TAG, "[Check sets End]");
     }
 
-    private Runnable updateTimer = new Runnable() {
-        public void run() {
-            //final TextView time = (TextView) findViewById(R.id.currentTime);
-            NumberFormat f = new DecimalFormat("00");
-            //Long spentTime = System.currentTimeMillis() - startTime;
-            //計算目前已過分鐘數
 
-            //計算目前已過秒數
-            //Long seconds = (time_use) % 60;
-            //time.setText(minius+":"+seconds);
 
-            handler.postDelayed(this, 1000);
-            time_use++;
+    /*public void toast(String message) {
+        Toast toast = Toast.makeText(this, message, Toast.LENGTH_LONG);
+        toast.setGravity(Gravity.CENTER_HORIZONTAL|Gravity.CENTER_VERTICAL, 0, 0);
+        toast.show();
+    }*/
 
-            Log.d(TAG, "time_use = "+time_use);
 
-            Calendar cal = Calendar.getInstance();
-            TimeZone tz = cal.getTimeZone();
-            SimpleDateFormat sdf = new SimpleDateFormat("hh:mm");
-            sdf.setTimeZone(tz);//set time zone.
-            Date netDate = new Date(System.currentTimeMillis());
-            //Date gameDate = new Date(spentTime);
-            Long hour = (time_use)/3600;
-            Long min = (time_use)%3600/60;
-            Long sec = (time_use)%60;
-            textCurrentTime.setText(sdf.format(netDate));
-            textGameTime.setText(f.format(hour)+":"+f.format(min)+":"+f.format(sec));
-            //textGameTime.setText(sdf.format(gameDate));
-        }
-    };
 
+
+
+    /**
+     * The Handler that gets information back from the BluetoothChatService
+     */
     private final Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -1390,16 +1131,6 @@ public class GameActivity extends WearableActivity {
                             Log.d(TAG, "STATE_CONNECTED");
                             //setStatus(getString(R.string.title_connected_to, mConnectedDeviceName));
                             //mConversationArrayAdapter.clear();
-
-                            String message = "init;"+set+";"+tiebreak+";"+deuce+";"+serve;
-                            byte[] send = message.getBytes();
-                            if (mChatService != null) {
-                                mChatService.write(send);
-
-                                // Reset out string buffer to zero and clear the edit text field
-                                mOutStringBuffer.setLength(0);
-                            }
-
                             break;
                         case BluetoothService.STATE_CONNECTING:
                             Log.d(TAG, "STATE_CONNECTING");
@@ -1426,28 +1157,62 @@ public class GameActivity extends WearableActivity {
                     // construct a string from the valid bytes in the buffer
                     String readMessage = new String(readBuf, 0, msg.arg1);
                     Log.d(TAG, "MESSAGE_READ : "+readMessage);
+                    actionForMessage(readMessage);
                     //mConversationArrayAdapter.add(mConnectedDeviceName + ":  " + readMessage);
                     break;
                 case MESSAGE_DEVICE_NAME:
                     // save the connected device's name
                     mConnectedDeviceName = msg.getData().getString(DEVICE_NAME);
-                    Toast.makeText(GameActivity.this, "Connected to "
+                    Toast.makeText(WearModeGameActivity.this, "Connected to "
                             + mConnectedDeviceName, Toast.LENGTH_SHORT).show();
                     break;
                 case MESSAGE_TOAST:
-                    Toast.makeText(GameActivity.this, msg.getData().getString(TOAST),
+                    Toast.makeText(WearModeGameActivity.this, msg.getData().getString(TOAST),
                             Toast.LENGTH_SHORT).show();
                     break;
             }
         }
     };
 
-    private void connectDevice(boolean secure, String address) {
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            case REQUEST_CONNECT_DEVICE_SECURE:
+                // When DeviceListActivity returns with a device to connect
+                if (resultCode == Activity.RESULT_OK) {
+                    connectDevice(data, true);
+                }
+                break;
+            case REQUEST_CONNECT_DEVICE_INSECURE:
+                // When DeviceListActivity returns with a device to connect
+                if (resultCode == Activity.RESULT_OK) {
+                    connectDevice(data, false);
+                }
+                break;
+            case REQUEST_ENABLE_BT:
+                // When the request to enable Bluetooth returns
+                if (resultCode == Activity.RESULT_OK) {
+                    // Bluetooth is now enabled, so set up a chat session
+                    setupChat();
+                } else {
+                    // User did not enable Bluetooth or an error occurred
+                    Log.d(TAG, "BT not enabled");
+                    Toast.makeText(this, "Bluetooth was not enabled.",
+                            Toast.LENGTH_SHORT).show();
+                }
+        }
+    }
+
+    /**
+     * Establish connection with other divice
+     *
+     * @param data   An {@link Intent} with {@link DeviceListActivity#EXTRA_DEVICE_ADDRESS} extra.
+     * @param secure Socket Security type - Secure (true) , Insecure (false)
+     */
+    private void connectDevice(Intent data, boolean secure) {
         // Get the device MAC address
-        //String address = data.getExtras()
-        //        .getString(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
+        String address = data.getExtras()
+                .getString(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
         // Get the BluetoothDevice object
-        Log.d(TAG, "connectDevice");
         BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
         // Attempt to connect to the device
         mChatService.connect(device, secure);
@@ -1483,5 +1248,179 @@ public class GameActivity extends WearableActivity {
 
         // Initialize the buffer for outgoing messages
         mOutStringBuffer = new StringBuffer("");
+    }
+
+    private void actionForMessage(String msg) {
+        Log.d(TAG, "actionForMessage");
+        if (msg.contains("init")) {
+            Log.d(TAG, "=> init");
+            stack.clear();
+            String msgArray[] = msg.split(";");
+
+            set = msgArray[1];
+            tiebreak = msgArray[2];
+            deuce = msgArray[3];
+            serve = msgArray[4];
+
+            gameUp.setText("0");
+            gameDown.setText("0");
+            pointUp.setText("0");
+            pointDown.setText("0");
+
+            if (serve != null) {
+                if (serve.equals("0")) { //you serve first
+                    imgServeUp.setVisibility(View.INVISIBLE);
+                    imgServeDown.setVisibility(View.VISIBLE);
+                } else {
+                    imgServeUp.setVisibility(View.VISIBLE);
+                    imgServeDown.setVisibility(View.INVISIBLE);
+                }
+            } else {
+                serve = "0";
+                imgServeUp.setVisibility(View.INVISIBLE);
+                imgServeDown.setVisibility(View.VISIBLE);
+            }
+
+            if (playerUp != null && playerDown != null) {
+                if (playerUp.equals(""))
+                    playerUp = "Player1";
+                if (playerDown.equals(""))
+                    playerDown = "Player2";
+                nameLayout.setVisibility(View.VISIBLE);
+            } else {
+                if (playerUp == null)
+                    playerUp = "Player1";
+                if (playerDown == null)
+                    playerDown = "Player2";
+                nameLayout.setVisibility(View.VISIBLE);
+            }
+        } else {
+
+            switch (msg) {
+                case "you":
+                    Log.d(TAG, "=> you");
+                    calculateScore(true);
+                    break;
+                case "oppt":
+                    Log.d(TAG, "=> oppt");
+                    calculateScore(false);
+                    break;
+                case "reset":
+
+                    break;
+                case "back":
+                    Log.d(TAG, "=> back");
+                    if (stack.isEmpty()) {
+                        Log.d(TAG, "stack is empty");
+                    } else {
+                        byte current_set;
+                        //stack.pop();
+                        if (stack.pop() != null) { //pop out current
+                            State back_state = stack.peek();
+                            if (back_state != null) {
+                                current_set = back_state.getCurrent_set();
+
+                                gameUp.setText(String.valueOf(back_state.getSet_game_up(current_set)));
+                                gameDown.setText(String.valueOf(back_state.getSet_game_down(current_set)));
+
+                                if (back_state.isServe()) {
+                                    imgServeUp.setVisibility(View.INVISIBLE);
+                                    imgServeDown.setVisibility(View.VISIBLE);
+                                } else {
+                                    imgServeUp.setVisibility(View.VISIBLE);
+                                    imgServeDown.setVisibility(View.INVISIBLE);
+                                }
+
+                                if (!back_state.isInTiebreak()) { //not in tiebreak
+                                    if (back_state.getSet_point_up(current_set) == 1) {
+                                        pointUp.setText(String.valueOf(15));
+                                    } else if (back_state.getSet_point_up(current_set) == 2) {
+                                        pointUp.setText(String.valueOf(30));
+                                    } else if (back_state.getSet_point_up(current_set) == 3) {
+                                        pointUp.setText(String.valueOf(40));
+                                    } else if (back_state.getSet_point_up(current_set) == 4) {
+                                        String pointMsg = String.valueOf(40) + "A";
+                                        pointUp.setText(pointMsg);
+                                    } else {
+                                        pointUp.setText("0");
+                                    }
+                                } else { //tie break;
+                                    pointUp.setText(String.valueOf(back_state.getSet_point_up(current_set)));
+                                }
+
+                                if (!back_state.isInTiebreak()) { //not in tiebreak
+                                    if (back_state.getSet_point_down(current_set) == 1) {
+                                        pointDown.setText(String.valueOf(15));
+                                    } else if (back_state.getSet_point_down(current_set) == 2) {
+                                        pointDown.setText(String.valueOf(30));
+                                    } else if (back_state.getSet_point_down(current_set) == 3) {
+                                        pointDown.setText(String.valueOf(40));
+                                    } else if (back_state.getSet_point_down(current_set) == 4) {
+                                        String pointMsg = String.valueOf(40) + "A";
+                                        pointDown.setText(pointMsg);
+                                    } else {
+                                        pointDown.setText("0");
+                                    }
+                                } else {
+                                    pointDown.setText(String.valueOf(back_state.getSet_point_down(current_set)));
+                                }
+
+                                Log.d(TAG, "########## back state start ##########");
+                                Log.d(TAG, "current set : " + back_state.getCurrent_set());
+                                Log.d(TAG, "Serve : " + back_state.isServe());
+                                Log.d(TAG, "In tiebreak : " + back_state.isInTiebreak());
+                                Log.d(TAG, "Finish : " + back_state.isFinish());
+
+                                int set_limit;
+                                switch (set) {
+                                    case "0":
+                                        set_limit = 1;
+                                        break;
+                                    case "1":
+                                        set_limit = 3;
+                                        break;
+                                    case "2":
+                                        set_limit = 5;
+                                        break;
+                                    default:
+                                        set_limit = 1;
+                                        break;
+                                }
+
+
+                                for (int i = 1; i <= set_limit; i++) {
+                                    Log.d(TAG, "================================");
+                                    Log.d(TAG, "[set " + i + "]");
+                                    Log.d(TAG, "[Game : " + back_state.getSet_game_up((byte) i) + " / " + back_state.getSet_game_down((byte) i) + "]");
+                                    Log.d(TAG, "[Point : " + back_state.getSet_point_up((byte) i) + " / " + back_state.getSet_point_down((byte) i) + "]");
+                                    Log.d(TAG, "[tiebreak : " + back_state.getSet_tiebreak_point_up((byte) i) + " / " + back_state.getSet_tiebreak_point_down((byte) i) + "]");
+                                }
+
+
+                                Log.d(TAG, "########## back state end ##########");
+
+                            } else {
+                                gameUp.setText("0");
+                                gameDown.setText("0");
+
+                                imgServeUp.setVisibility(View.INVISIBLE);
+                                imgServeDown.setVisibility(View.INVISIBLE);
+
+                                pointUp.setText("0");
+                                pointDown.setText("0");
+
+                                if (serve.equals("0")) { //you server first
+                                    imgServeUp.setVisibility(View.INVISIBLE);
+                                    imgServeDown.setVisibility(View.VISIBLE);
+                                } else {
+                                    imgServeUp.setVisibility(View.VISIBLE);
+                                    imgServeDown.setVisibility(View.INVISIBLE);
+                                }
+                            }
+                        }
+                    }
+                    break;
+            }
+        }
     }
 }
