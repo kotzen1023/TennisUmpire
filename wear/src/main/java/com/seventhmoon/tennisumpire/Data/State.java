@@ -47,6 +47,7 @@ public class State {
     private byte set_5_tiebreak_point_up;
     private byte set_5_tiebreak_point_down;
     //private boolean set_5_serve;
+    private boolean who_win_this_point;
 
     public byte getCurrent_set() {
         return current_set;
@@ -95,6 +96,8 @@ public class State {
     public void setSetsDown(byte setsDown) {
         this.setsDown = setsDown;
     }
+
+
 
     public byte getSet_game_up(byte set) {
         byte ret = 0;
@@ -361,5 +364,11 @@ public class State {
         }
     }
 
+    public boolean getWho_win_this_point() {
+        return who_win_this_point;
+    }
 
+    public void setWho_win_this_point(boolean who_win_this_point) {
+        this.who_win_this_point = who_win_this_point;
+    }
 }

@@ -50,7 +50,9 @@ import static com.seventhmoon.tennisumpire.Data.InitData.mLinearAcceration;
 import static com.seventhmoon.tennisumpire.Data.InitData.mOutStringBuffer;
 import static com.seventhmoon.tennisumpire.Data.InitData.mRotationVector;
 import static com.seventhmoon.tennisumpire.Data.InitData.mSensorManager;
+import static com.seventhmoon.tennisumpire.Data.InitData.mStepCounter;
 import static com.seventhmoon.tennisumpire.Data.InitData.rotationVectorListener;
+import static com.seventhmoon.tennisumpire.Data.InitData.stepCountListener;
 import static java.lang.Math.sqrt;
 
 
@@ -102,6 +104,11 @@ public class GameActivity extends WearableActivity {
     private static long x_coordinate_previous = 0;
     private static long y_coordinate_previous = 0;
     private static double distance = 0;
+
+    //step
+    private static float step_count_start = 0;
+    private static float step_count_end = 0;
+    private static boolean is_first = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -187,7 +194,7 @@ public class GameActivity extends WearableActivity {
 
                 } else {
                     //send back
-                    String message = "back";
+                    String message = "command|back";
                     byte[] send = message.getBytes();
                     if (mChatService != null) {
                         mChatService.write(send);
@@ -310,7 +317,7 @@ public class GameActivity extends WearableActivity {
             @Override
             public void onClick(View view) {
                 calculateScore(true);
-                String message = "you";
+                String message = "command|you";
                 byte[] send = message.getBytes();
                 if (mChatService != null) {
                     mChatService.write(send);
@@ -325,7 +332,7 @@ public class GameActivity extends WearableActivity {
             @Override
             public void onClick(View view) {
                 calculateScore(false);
-                String message = "oppt";
+                String message = "command|oppt";
                 byte[] send = message.getBytes();
                 if (mChatService != null) {
                     mChatService.write(send);
@@ -344,7 +351,7 @@ public class GameActivity extends WearableActivity {
                 handler.removeCallbacks(updateTimer);
 
                 //send reset
-                String message = "reset";
+                String message = "command|reset";
                 byte[] send = message.getBytes();
                 if (mChatService != null) {
                     mChatService.write(send);
@@ -404,7 +411,7 @@ public class GameActivity extends WearableActivity {
         }
 
         //sensor
-        /*
+
         previous_time = 0;
         current_time = 0;
         x_previous_velocity = 0.0;
@@ -419,7 +426,9 @@ public class GameActivity extends WearableActivity {
 
         distance = 0.0;
 
+        step_count_start = 0;
 
+        //linear accelerometer
         accelerometerListener = new SensorEventListener() {
             @Override
             public void onSensorChanged(SensorEvent event) {
@@ -443,6 +452,8 @@ public class GameActivity extends WearableActivity {
                         //Log.d(TAG, "distance = "+distance);
                     }
 
+
+                    /*
                     String logMsg = "(" +  x_coordinate_current + ", " +  y_coordinate_current +
                             ")" +
                             " vX=" +
@@ -466,7 +477,8 @@ public class GameActivity extends WearableActivity {
 
                         // Reset out string buffer to zero and clear the edit text field
                         mOutStringBuffer.setLength(0);
-                    }
+                    }*/
+
                 }
 
                 previous_time = current_time;
@@ -486,11 +498,12 @@ public class GameActivity extends WearableActivity {
 
         mSensorManager.registerListener(accelerometerListener, mLinearAcceration, SensorManager.SENSOR_DELAY_NORMAL);
 
+        //rotation
         rotationVectorListener = new SensorEventListener() {
 
             @Override
             public void onSensorChanged(SensorEvent event) {
-                Log.d(TAG, "x : "+event.values[0]+" y : "+event.values[1]+" z : "+event.values[2]+" scalar : "+event.values[3]);
+                //Log.d(TAG, "x : "+event.values[0]+" y : "+event.values[1]+" z : "+event.values[2]+" scalar : "+event.values[3]);
             }
 
             @Override
@@ -500,7 +513,37 @@ public class GameActivity extends WearableActivity {
         };
 
         mSensorManager.registerListener(rotationVectorListener, mRotationVector, SensorManager.SENSOR_DELAY_NORMAL);
-        */
+
+        //step count
+        stepCountListener = new SensorEventListener() {
+            @Override
+            public void onSensorChanged(SensorEvent event) {
+                if (is_first) {
+                    Log.d(TAG, "first, "+event.values[0]);
+                    step_count_start = event.values[0];
+                    is_first = false;
+                } else {
+                    step_count_end = event.values[0];
+                    Log.d(TAG, "step count = "+(step_count_end - step_count_start));
+                    /*String logMsg = "count = "+(step_count_end - step_count_start);
+                    byte[] send = logMsg.getBytes();
+                    if (mChatService != null) {
+                        mChatService.write(send);
+
+                        // Reset out string buffer to zero and clear the edit text field
+                        mOutStringBuffer.setLength(0);
+                    }*/
+                }
+
+            }
+
+            @Override
+            public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+            }
+        };
+
+        mSensorManager.registerListener(stepCountListener, mStepCounter, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
     @Override
@@ -567,7 +610,9 @@ public class GameActivity extends WearableActivity {
         handler.removeCallbacks(updateTimer);
         InitData.is_running = false;
 
-        mChatService.stop();
+
+        if (mChatService != null)
+            mChatService.stop();
         mChatService = null;
 
         //mSensorManager.unregisterListener(accelerometerListener);
@@ -666,6 +711,7 @@ public class GameActivity extends WearableActivity {
 
                     if (stack.isEmpty()) { //the state stack is empty
                         new_state = new State();
+                        new_state.setWho_win_this_point(true);
                         Log.d(TAG, "==>[Stack empty]");
                         if (serve.equals("0"))
                             new_state.setServe(true);
@@ -687,6 +733,7 @@ public class GameActivity extends WearableActivity {
                             Log.d(TAG, "**** Game Finish ****");
                         } else {
                             new_state = new State();
+                            new_state.setWho_win_this_point(true);
                             //new_state = stack.peek();
                             // copy previous state;
                             new_state.setCurrent_set(current_state.getCurrent_set());
@@ -722,6 +769,7 @@ public class GameActivity extends WearableActivity {
                     Log.d(TAG, "=== Oppt score start ===");
                     if (stack.isEmpty()) { //the state stack is empty
                         new_state = new State();
+                        new_state.setWho_win_this_point(false);
                         Log.d(TAG, "==>[Stack empty]");
                         if (serve.equals("0"))
                             new_state.setServe(true);
@@ -741,6 +789,7 @@ public class GameActivity extends WearableActivity {
                             Log.d(TAG, "**** Game Finish ****");
                         } else {
                             new_state = new State();
+                            new_state.setWho_win_this_point(false);
                             //new_state = stack.peek();
                             // copy previous state;
                             new_state.setCurrent_set(current_state.getCurrent_set());
@@ -882,6 +931,7 @@ public class GameActivity extends WearableActivity {
 
                 //if (stack.isEmpty()) { //the state stack is empty
                     new_state = new State();
+                    new_state.setWho_win_this_point(true);
                     Log.d(TAG, "==>[Stack empty]");
                     if (serve.equals("0"))
                         new_state.setServe(true);
@@ -903,6 +953,7 @@ public class GameActivity extends WearableActivity {
                 Log.d(TAG, "=== Oppt score start ===");
                 //if (stack.isEmpty()) { //the state stack is empty
                     new_state = new State();
+                    new_state.setWho_win_this_point(false);
                     Log.d(TAG, "==>[Stack empty]");
                     if (serve.equals("0"))
                         new_state.setServe(true);
@@ -1363,6 +1414,47 @@ public class GameActivity extends WearableActivity {
 
             Log.d(TAG, "time_use = "+time_use);
 
+            if (time_use % 10 == 0) {
+
+                if (!stack.isEmpty()) {
+                    /*
+                        set = intent.getStringExtra("SETUP_SET");
+                        tiebreak = intent.getStringExtra("SETUP_TIEBREAK");
+                        deuce = intent.getStringExtra("SETUP_DEUCE");
+                        serve = intent.getStringExtra("SETUP_SERVE");
+                     */
+
+                    String message = "command|calibrate&"+set+"&"+tiebreak+"&"+deuce+"&"+serve+"&";
+
+                    String state_msg = "";
+                    for (State s : stack) {
+                        if (state_msg.equals(""))
+                            state_msg = s.getWho_win_this_point() +"";
+                        else
+                            state_msg = s.getWho_win_this_point() +";"+state_msg;
+                    }
+                    message = message + state_msg;
+                    byte[] send = message.getBytes();
+                    if (mChatService != null) {
+                        mChatService.write(send);
+
+                        // Reset out string buffer to zero and clear the edit text field
+                        mOutStringBuffer.setLength(0);
+                    }
+                }
+            }
+
+            /*
+            String message = "command|oppt";
+                byte[] send = message.getBytes();
+                if (mChatService != null) {
+                    mChatService.write(send);
+
+                    // Reset out string buffer to zero and clear the edit text field
+                    mOutStringBuffer.setLength(0);
+                }
+             */
+
             Calendar cal = Calendar.getInstance();
             TimeZone tz = cal.getTimeZone();
             SimpleDateFormat sdf = new SimpleDateFormat("hh:mm");
@@ -1391,7 +1483,7 @@ public class GameActivity extends WearableActivity {
                             //setStatus(getString(R.string.title_connected_to, mConnectedDeviceName));
                             //mConversationArrayAdapter.clear();
 
-                            String message = "init;"+set+";"+tiebreak+";"+deuce+";"+serve;
+                            String message = "command|init;"+set+";"+tiebreak+";"+deuce+";"+serve;
                             byte[] send = message.getBytes();
                             if (mChatService != null) {
                                 mChatService.write(send);
@@ -1399,6 +1491,7 @@ public class GameActivity extends WearableActivity {
                                 // Reset out string buffer to zero and clear the edit text field
                                 mOutStringBuffer.setLength(0);
                             }
+
 
                             break;
                         case BluetoothService.STATE_CONNECTING:

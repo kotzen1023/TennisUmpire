@@ -21,295 +21,333 @@
             android:layout_height="match_parent"
             android:layout_weight="1">
 
-
-
-
-
             <LinearLayout
                 android:orientation="vertical"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_weight="1">
+                android:layout_weight="30">
 
-                <LinearLayout
-                    android:orientation="horizontal"
+                <ImageView
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_weight="1">
+                    android:id="@+id/imageView7"
+                    android:layout_weight="1"
+                    android:src="@android:color/holo_blue_dark" />
 
-                    <TextView
-                        android:text=""
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:id="@+id/set1_up"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:textSize="30sp"/>
-
-                    <TextView
-                        android:text=""
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:id="@+id/set1_tibreak_up"
-                        android:layout_weight="3"
-                        android:visibility="gone"
-                        />
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:orientation="horizontal"
+                <ImageView
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_weight="1">
-
-                    <TextView
-                        android:text=""
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:id="@+id/set1_down"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:textSize="30sp"/>
-
-                    <TextView
-                        android:text=""
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:id="@+id/set1_tibreak_down"
-                        android:layout_weight="3"
-                        android:visibility="gone"/>
-
-                </LinearLayout>
-
+                    android:id="@+id/imageView5"
+                    android:layout_weight="1"
+                    android:src="?android:attr/colorFocusedHighlight" />
             </LinearLayout>
 
             <LinearLayout
-                android:orientation="vertical"
+                android:orientation="horizontal"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_weight="1">
 
+
+
+
+
                 <LinearLayout
-                    android:orientation="horizontal"
+                    android:orientation="vertical"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_weight="1">
 
-                    <TextView
-                        android:text=""
+                    <LinearLayout
+                        android:orientation="horizontal"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:id="@+id/set2_up"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:textSize="30sp"/>
+                        android:layout_weight="1">
 
-                    <TextView
-                        android:text=""
+                        <TextView
+                            android:text=""
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:id="@+id/set1_up"
+                            android:layout_weight="1"
+                            android:gravity="center"
+                            android:textSize="30sp"/>
+
+                        <TextView
+                            android:text=""
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:id="@+id/set1_tibreak_up"
+                            android:layout_weight="3"
+                            android:gravity="center_vertical"
+                            android:visibility="gone"
+                            />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:orientation="horizontal"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:id="@+id/set2_tibreak_up"
-                        android:layout_weight="3"
-                        android:visibility="gone"/>
+                        android:layout_weight="1">
+
+                        <TextView
+                            android:text=""
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:id="@+id/set1_down"
+                            android:layout_weight="1"
+                            android:gravity="center"
+                            android:textSize="30sp"/>
+
+                        <TextView
+                            android:text=""
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:id="@+id/set1_tibreak_down"
+                            android:layout_weight="3"
+                            android:gravity="center_vertical"
+                            android:visibility="gone"/>
+
+                    </LinearLayout>
 
                 </LinearLayout>
 
                 <LinearLayout
-                    android:orientation="horizontal"
+                    android:orientation="vertical"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_weight="1">
 
-                    <TextView
-                        android:text=""
+                    <LinearLayout
+                        android:orientation="horizontal"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:id="@+id/set2_down"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:textSize="30sp"/>
+                        android:layout_weight="1">
 
-                    <TextView
-                        android:text=""
+                        <TextView
+                            android:text=""
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:id="@+id/set2_up"
+                            android:layout_weight="1"
+                            android:gravity="center"
+                            android:textSize="30sp"/>
+
+                        <TextView
+                            android:text=""
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:id="@+id/set2_tibreak_up"
+                            android:layout_weight="3"
+                            android:gravity="center_vertical"
+                            android:visibility="gone"/>
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:orientation="horizontal"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:id="@+id/set2_tibreak_down"
-                        android:layout_weight="3"
-                        android:visibility="gone"/>
-                </LinearLayout>
+                        android:layout_weight="1">
 
-            </LinearLayout>
+                        <TextView
+                            android:text=""
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:id="@+id/set2_down"
+                            android:layout_weight="1"
+                            android:gravity="center"
+                            android:textSize="30sp"/>
 
-            <LinearLayout
-                android:orientation="vertical"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_weight="1">
-
-                <LinearLayout
-                    android:orientation="horizontal"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1">
-
-                    <TextView
-                        android:text=""
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:id="@+id/set3_up"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:textSize="30sp"/>
-
-                    <TextView
-                        android:text=""
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:id="@+id/set3_tibreak_up"
-                        android:layout_weight="3"
-                        android:visibility="gone"/>
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:orientation="horizontal"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1">
-
-                    <TextView
-                        android:text=""
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:id="@+id/set3_down"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:textSize="30sp"/>
-
-                    <TextView
-                        android:text=""
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:id="@+id/set3_tibreak_down"
-                        android:layout_weight="3"
-                        android:visibility="gone"/>
-                </LinearLayout>
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:orientation="vertical"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_weight="1">
-
-                <LinearLayout
-                    android:orientation="horizontal"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1">
-
-                    <TextView
-                        android:text=""
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:id="@+id/set4_up"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:textSize="30sp"/>
-
-                    <TextView
-                        android:text="TextView"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:id="@+id/set4_tibreak_up"
-                        android:layout_weight="3"
-                        android:visibility="gone"/>
+                        <TextView
+                            android:text=""
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:id="@+id/set2_tibreak_down"
+                            android:layout_weight="3"
+                            android:gravity="center_vertical"
+                            android:visibility="gone"/>
+                    </LinearLayout>
 
                 </LinearLayout>
 
                 <LinearLayout
-                    android:orientation="horizontal"
+                    android:orientation="vertical"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_weight="1">
 
-                    <TextView
-                        android:text=""
+                    <LinearLayout
+                        android:orientation="horizontal"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:id="@+id/set4_down"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:textSize="30sp"/>
+                        android:layout_weight="1">
 
-                    <TextView
-                        android:text=""
+                        <TextView
+                            android:text=""
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:id="@+id/set3_up"
+                            android:layout_weight="1"
+                            android:gravity="center"
+                            android:textSize="30sp"/>
+
+                        <TextView
+                            android:text=""
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:id="@+id/set3_tibreak_up"
+                            android:layout_weight="3"
+                            android:gravity="center_vertical"
+                            android:visibility="gone"/>
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:orientation="horizontal"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:id="@+id/set4_tibreak_down"
-                        android:layout_weight="3"
-                        android:visibility="gone"/>
+                        android:layout_weight="1">
+
+                        <TextView
+                            android:text=""
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:id="@+id/set3_down"
+                            android:layout_weight="1"
+                            android:gravity="center"
+                            android:textSize="30sp"/>
+
+                        <TextView
+                            android:text=""
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:id="@+id/set3_tibreak_down"
+                            android:layout_weight="3"
+                            android:gravity="center_vertical"
+                            android:visibility="gone"/>
+                    </LinearLayout>
+
                 </LinearLayout>
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:orientation="vertical"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_weight="1">
 
                 <LinearLayout
-                    android:orientation="horizontal"
+                    android:orientation="vertical"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_weight="1">
 
-                    <TextView
-                        android:text=""
+                    <LinearLayout
+                        android:orientation="horizontal"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:id="@+id/set5_up"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:textSize="30sp"/>
+                        android:layout_weight="1">
 
-                    <TextView
-                        android:text=""
+                        <TextView
+                            android:text=""
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:id="@+id/set4_up"
+                            android:layout_weight="1"
+                            android:gravity="center"
+                            android:textSize="30sp"/>
+
+                        <TextView
+                            android:text="TextView"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:id="@+id/set4_tibreak_up"
+                            android:layout_weight="3"
+                            android:gravity="center_vertical"
+                            android:visibility="gone"/>
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:orientation="horizontal"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:id="@+id/set5_tibreak_up"
-                        android:layout_weight="3"
-                        android:visibility="gone"/>
+                        android:layout_weight="1">
+
+                        <TextView
+                            android:text=""
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:id="@+id/set4_down"
+                            android:layout_weight="1"
+                            android:gravity="center"
+                            android:textSize="30sp"/>
+
+                        <TextView
+                            android:text=""
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:id="@+id/set4_tibreak_down"
+                            android:layout_weight="3"
+                            android:gravity="center_vertical"
+                            android:visibility="gone"/>
+                    </LinearLayout>
 
                 </LinearLayout>
 
                 <LinearLayout
-                    android:orientation="horizontal"
+                    android:orientation="vertical"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_weight="1">
 
-                    <TextView
-                        android:text=""
+                    <LinearLayout
+                        android:orientation="horizontal"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:id="@+id/set5_down"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:textSize="30sp"/>
+                        android:layout_weight="1">
 
-                    <TextView
-                        android:text=""
+                        <TextView
+                            android:text=""
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:id="@+id/set5_up"
+                            android:layout_weight="1"
+                            android:gravity="center"
+                            android:textSize="30sp"/>
+
+                        <TextView
+                            android:text=""
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:id="@+id/set5_tibreak_up"
+                            android:layout_weight="3"
+                            android:gravity="center_vertical"
+                            android:visibility="gone"/>
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:orientation="horizontal"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:id="@+id/set5_tibreak_down"
-                        android:layout_weight="3"
-                        android:visibility="gone"/>
+                        android:layout_weight="1">
+
+                        <TextView
+                            android:text=""
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:id="@+id/set5_down"
+                            android:layout_weight="1"
+                            android:gravity="center"
+                            android:textSize="30sp"/>
+
+                        <TextView
+                            android:text=""
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:id="@+id/set5_tibreak_down"
+                            android:layout_weight="3"
+                            android:gravity="center_vertical"
+                            android:visibility="gone"/>
+                    </LinearLayout>
+
                 </LinearLayout>
-
             </LinearLayout>
         </LinearLayout>
 

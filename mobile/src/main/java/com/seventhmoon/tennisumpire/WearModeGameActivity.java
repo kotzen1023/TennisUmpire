@@ -74,6 +74,7 @@ public class WearModeGameActivity extends AppCompatActivity {
     private ImageView imgWinCheckDown;
 
     private ImageView imgPlayOrPause;
+    private TextView stepAndDistance;
 
     //private TextView mClockView;
 
@@ -149,6 +150,8 @@ public class WearModeGameActivity extends AppCompatActivity {
     //private static double x_coordinate = 0.0;
     //private static double y_coordinate = 0.0;
     //private static double z_coordinate = 0.0;
+    private static String steps_count;
+    private static String distance_run;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -252,6 +255,7 @@ public class WearModeGameActivity extends AppCompatActivity {
 
         imgPlayOrPause = (ImageView) findViewById(R.id.imageViewPlayOrPause);
 
+        stepAndDistance = (TextView) findViewById(R.id.currentTime);
         //mConversationView = (ListView) findViewById(R.id.);
 
 
@@ -429,7 +433,8 @@ public class WearModeGameActivity extends AppCompatActivity {
                 intent.putExtra("SET5_TIEBREAK_DOWN", String.valueOf(current_state.getSet_tiebreak_point_down((byte)0x05)));
 
                 intent.putExtra("GAME_DURATION", String.valueOf(String.valueOf(time_use)));
-
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
                 startActivity(intent);
             } else { //not finish
@@ -1157,7 +1162,11 @@ public class WearModeGameActivity extends AppCompatActivity {
                     // construct a string from the valid bytes in the buffer
                     String readMessage = new String(readBuf, 0, msg.arg1);
                     Log.d(TAG, "MESSAGE_READ : "+readMessage);
-                    actionForMessage(readMessage);
+                    if (readMessage.contains("command")) {
+                        String msgArray[] = readMessage.split("\\|");
+                        actionForMessage(msgArray[1]);
+                    }
+
                     //mConversationArrayAdapter.add(mConnectedDeviceName + ":  " + readMessage);
                     break;
                 case MESSAGE_DEVICE_NAME:
@@ -1251,7 +1260,7 @@ public class WearModeGameActivity extends AppCompatActivity {
     }
 
     private void actionForMessage(String msg) {
-        Log.d(TAG, "actionForMessage");
+        Log.d(TAG, "command action "+msg);
         if (msg.contains("init")) {
             Log.d(TAG, "=> init");
             stack.clear();
@@ -1293,6 +1302,19 @@ public class WearModeGameActivity extends AppCompatActivity {
                 if (playerDown == null)
                     playerDown = "Player2";
                 nameLayout.setVisibility(View.VISIBLE);
+            }
+        } if (msg.contains("calibrate")) {
+            Log.d(TAG, "=> calibrate");
+            stack.clear();
+            String msgArray[] = msg.split("&");
+            set = msgArray[1];
+            tiebreak = msgArray[2];
+            deuce = msgArray[3];
+            serve = msgArray[4];
+            String stateArray[] = msgArray[5].split(";");
+            for (int i=0; i <stateArray.length;i++) {
+                Log.d(TAG, "stateArray["+i+"]="+stateArray[i]);
+                calculateScore(Boolean.valueOf(stateArray[i]));
             }
         } else {
 

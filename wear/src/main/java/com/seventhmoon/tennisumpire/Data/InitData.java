@@ -19,7 +19,9 @@ public class InitData {
     public static Sensor mStepCounter;
     public static boolean is_running;
     public static SensorEventListener accelerometerListener;
+    public static SensorEventListener linearaccelerometerListener;
     public static SensorEventListener rotationVectorListener;
+    public static SensorEventListener stepCountListener;
 
     //bluetooth
     /**

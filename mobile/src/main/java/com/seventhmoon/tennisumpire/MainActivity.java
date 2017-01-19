@@ -107,10 +107,11 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent;
                 if (mBluetoothAdapter.isEnabled()) {
-                    intent = new Intent(MainActivity.this, WearModeGameActivity.class);
+                    showInputDialog();
+                    //intent = new Intent(MainActivity.this, WearModeGameActivity.class);
                     //intent.putExtra("WEAR_MODE", "true");
-                    startActivity(intent);
-                    finish();
+                    //startActivity(intent);
+                    //finish();
                 } else {
                     intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                     startActivityForResult(intent, REQUEST_ENABLE_BT);
@@ -143,6 +144,50 @@ public class MainActivity extends AppCompatActivity {
 
 
         super.onDestroy();
+    }
+
+    protected void showInputDialog() {
+
+        // get prompts.xml view
+        /*LayoutInflater layoutInflater = LayoutInflater.from(Nfc_read_app.this);
+        View promptView = layoutInflater.inflate(R.layout.input_dialog, null);*/
+        View promptView = View.inflate(MainActivity.this, R.layout.input_dialog, null);
+
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this);
+        alertDialogBuilder.setView(promptView);
+
+        final EditText editFileName = (EditText) promptView.findViewById(R.id.editFileName);
+        final EditText editPlayerUp = (EditText) promptView.findViewById(R.id.editPlayerUp);
+        final EditText editPlayerDown = (EditText) promptView.findViewById(R.id.editPlayerDown);
+
+        editFileName.setVisibility(View.GONE);
+        // setup a dialog window
+        alertDialogBuilder.setCancelable(false);
+        alertDialogBuilder.setPositiveButton(getResources().getString(R.string.dialog_confirm), new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                //resultText.setText("Hello, " + editText.getText());
+                //Log.e(TAG, "input password = " + editText.getText());
+
+                Intent intent = new Intent(MainActivity.this, WearModeGameActivity.class);
+                //intent.putExtra("FILE_NAME", editFileName.getText().toString());
+                if (!editPlayerUp.getText().toString().equals(""))
+                    intent.putExtra("PLAYER_UP", editPlayerUp.getText().toString());
+                else
+                    intent.putExtra("PLAYER_UP", "");
+                if (!editPlayerDown.getText().toString().equals(""))
+                    intent.putExtra("PLAYER_DOWN", editPlayerDown.getText().toString());
+                else
+                    intent.putExtra("PLAYER_DOWN", "");
+                startActivity(intent);
+                finish();
+            }
+        });
+        alertDialogBuilder.setNegativeButton(getResources().getString(R.string.dialog_cancel), new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+
+            }
+        });
+        alertDialogBuilder.show();
     }
 
     public void toast(String message) {
