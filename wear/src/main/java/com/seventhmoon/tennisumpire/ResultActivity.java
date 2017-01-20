@@ -11,6 +11,9 @@ import android.widget.TextView;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
+import static com.seventhmoon.tennisumpire.Data.InitData.mChatService;
+import static com.seventhmoon.tennisumpire.Data.InitData.mOutStringBuffer;
+
 public class ResultActivity extends WearableActivity {
     private static final String TAG = ResultActivity.class.getName();
 
@@ -187,6 +190,16 @@ public class ResultActivity extends WearableActivity {
             public void onClick(View view) {
                 //Intent intent = new Intent(ResultActivity.this, GameActivity.class);
                 //startActivity(intent);
+
+                String message = "command|close";
+                byte[] send = message.getBytes();
+                if (mChatService != null) {
+                    mChatService.write(send);
+
+                    // Reset out string buffer to zero and clear the edit text field
+                    mOutStringBuffer.setLength(0);
+                }
+
                 finish();
             }
         });

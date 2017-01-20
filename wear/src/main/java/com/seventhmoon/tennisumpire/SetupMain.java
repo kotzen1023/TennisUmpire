@@ -10,6 +10,11 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
 
+import com.seventhmoon.tennisumpire.Data.ServeAdapter;
+import com.seventhmoon.tennisumpire.Data.ServeItem;
+
+import java.util.ArrayList;
+
 
 public class SetupMain extends WearableActivity {
     private static final String TAG = SetupMain.class.getName();
@@ -25,6 +30,9 @@ public class SetupMain extends WearableActivity {
     public ArrayAdapter<String> tiebreakAdapter;
     public ArrayAdapter<String> deuceAdapter;
     public ArrayAdapter<String> serveAdapter;
+
+    private ArrayList<ServeItem> newServerList = new ArrayList<>();
+    public ServeAdapter newserveAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,11 +59,13 @@ public class SetupMain extends WearableActivity {
 
         String[] deuceList = {getResources().getString(R.string.setup_deuce), getResources().getString(R.string.setup_deciding_point)};
 
-        String[] serveList = {getResources().getString(R.string.setup_serve_first), getResources().getString(R.string.setup_receive)};
-
+        //String[] serveList = {getResources().getString(R.string.setup_serve_first), getResources().getString(R.string.setup_receive)};
 
         setAdapter = new ArrayAdapter<>(SetupMain.this, R.layout.myspinner, setList);
         setSpinner.setAdapter(setAdapter);
+
+
+
 
         //gameAdapter = new ArrayAdapter<>(SetupMain.this, R.layout.myspinner, gameList);
         //gameSpinner.setAdapter(gameAdapter);
@@ -66,8 +76,22 @@ public class SetupMain extends WearableActivity {
         deuceAdapter = new ArrayAdapter<>(SetupMain.this, R.layout.myspinner, deuceList);
         deuceSpinner.setAdapter(deuceAdapter);
 
-        serveAdapter = new ArrayAdapter<>(SetupMain.this, R.layout.myspinner, serveList);
-        serveSpinner.setAdapter(serveAdapter);
+        //serve
+        ServeItem item1 = new ServeItem();
+        item1.setColor(0x16843663); //colorFocusedHighlight
+        item1.setText(getResources().getString(R.string.setup_serve_first));
+        newServerList.add(item1);
+
+        ServeItem item2 = new ServeItem();
+        item1.setColor(0x17170451); //holo_blue_dark
+        item1.setText(getResources().getString(R.string.setup_serve_first));
+        newServerList.add(item2);
+
+        //serveAdapter = new ArrayAdapter<>(SetupMain.this, R.layout.myspinner, serveList);
+        //serveSpinner.setAdapter(serveAdapter);
+
+        newserveAdapter = new ServeAdapter(SetupMain.this, R.layout.serve_spinner, newServerList);
+        serveSpinner.setAdapter(newserveAdapter);
 
         confirm.setOnClickListener(new View.OnClickListener() {
             @Override

@@ -15,6 +15,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -68,8 +69,13 @@ public class GameActivity extends WearableActivity {
     private TextView gameDown;
     private TextView pointUp;
     private TextView pointDown;
+    private TextView setUp;
+    private TextView setDown;
     private ImageView imgServeUp;
     private ImageView imgServeDown;
+    private LinearLayout setLayout;
+    private ImageView imgWinCheckUp;
+    private ImageView imgWinCheckDown;
 
     //private TextView mClockView;
 
@@ -149,6 +155,8 @@ public class GameActivity extends WearableActivity {
         gameDown = (TextView) findViewById(R.id.textViewGameDown);
         pointUp = (TextView) findViewById(R.id.textViewPointUp);
         pointDown = (TextView) findViewById(R.id.textViewPointDown);
+        setUp = (TextView) findViewById(R.id.textViewSetUp);
+        setDown = (TextView) findViewById(R.id.textViewSetDown);
 
         imgServeUp = (ImageView) findViewById(R.id.imageViewServeUp);
         imgServeDown = (ImageView) findViewById(R.id.imageViewServeDown);
@@ -157,6 +165,10 @@ public class GameActivity extends WearableActivity {
         textGameTime = (TextView) findViewById(R.id.gameTime);
 
         imgPlayOrPause = (ImageView) findViewById(R.id.imagePlayOrPause);
+        setLayout = (LinearLayout) findViewById(R.id.setLayout);
+
+        imgWinCheckUp = (ImageView) findViewById(R.id.imageWearWincheckUp);
+        imgWinCheckDown = (ImageView) findViewById(R.id.imageWearWincheckDown);
 
         //init score board
         gameUp.setText("0");
@@ -176,14 +188,16 @@ public class GameActivity extends WearableActivity {
 
         //mClockView = (TextView) findViewById(R.id.clock);
 
-        btnYouScore = (Button) findViewById(R.id.btnYouScore);
-        btnOpptScore = (Button) findViewById(R.id.btnOpptScore);
+        //btnYouScore = (Button) findViewById(R.id.btnYouScore);
+        //btnOpptScore = (Button) findViewById(R.id.btnOpptScore);
         btnImgBack = (ImageView) findViewById(R.id.btnImgBack);
         btnImgReset = (ImageView) findViewById(R.id.btnImgReset);
 
         btnImgBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                imgWinCheckUp.setVisibility(View.GONE);
+                imgWinCheckDown.setVisibility(View.GONE);
 
                 is_pause = false;
                 imgPlayOrPause.setVisibility(View.VISIBLE);
@@ -204,6 +218,8 @@ public class GameActivity extends WearableActivity {
                     }
 
                     byte current_set;
+                    handler.removeCallbacks(updateTimer);
+                    handler.postDelayed(updateTimer, 1000);
                     //stack.pop();
                     if (stack.pop() != null) { //pop out current
                         State back_state = stack.peek();
@@ -253,6 +269,16 @@ public class GameActivity extends WearableActivity {
                                 }
                             } else {
                                 pointDown.setText(String.valueOf(back_state.getSet_point_down(current_set)));
+                            }
+
+                            if (back_state.getSetsUp() > 0 || back_state.getSetsDown() > 0) {
+                                setLayout.setVisibility(View.VISIBLE);
+                                setUp.setText(String.valueOf(back_state.getSetsUp()));
+                                setDown.setText(String.valueOf(back_state.getSetsDown()));
+                            } else {
+                                setLayout.setVisibility(View.GONE);
+                                setUp.setText("0");
+                                setDown.setText("0");
                             }
 
                             Log.d(TAG, "########## back state start ##########");
@@ -313,7 +339,7 @@ public class GameActivity extends WearableActivity {
             }
         });
 
-        btnYouScore.setOnClickListener(new View.OnClickListener() {
+        /*btnYouScore.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 calculateScore(true);
@@ -326,11 +352,41 @@ public class GameActivity extends WearableActivity {
                     mOutStringBuffer.setLength(0);
                 }
             }
+        });*/
+
+        pointDown.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                calculateScore(true);
+                String message = "command|you";
+                byte[] send = message.getBytes();
+                if (mChatService != null) {
+                    mChatService.write(send);
+
+                    // Reset out string buffer to zero and clear the edit text field
+                    mOutStringBuffer.setLength(0);
+                }
+            }
         });
 
-        btnOpptScore.setOnClickListener(new View.OnClickListener() {
+        /*btnOpptScore.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                calculateScore(false);
+                String message = "command|oppt";
+                byte[] send = message.getBytes();
+                if (mChatService != null) {
+                    mChatService.write(send);
+
+                    // Reset out string buffer to zero and clear the edit text field
+                    mOutStringBuffer.setLength(0);
+                }
+            }
+        });*/
+
+        pointUp.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
                 calculateScore(false);
                 String message = "command|oppt";
                 byte[] send = message.getBytes();
@@ -373,11 +429,32 @@ public class GameActivity extends WearableActivity {
                     is_pause = true;
                     imgPlayOrPause.setImageResource(R.drawable.ic_play_arrow_white_48dp);
                     handler.removeCallbacks(updateTimer);
+
+                    //send pause
+                    String message = "command|pause";
+                    byte[] send = message.getBytes();
+                    if (mChatService != null) {
+                        mChatService.write(send);
+
+                        // Reset out string buffer to zero and clear the edit text field
+                        mOutStringBuffer.setLength(0);
+                    }
                 } else {
                     is_pause = false;
                     imgPlayOrPause.setImageResource(R.drawable.ic_pause_white_48dp);
                     handler.removeCallbacks(updateTimer);
                     handler.postDelayed(updateTimer, 1000);
+
+                    //send play
+                    //send pause
+                    String message = "command|play";
+                    byte[] send = message.getBytes();
+                    if (mChatService != null) {
+                        mChatService.write(send);
+
+                        // Reset out string buffer to zero and clear the edit text field
+                        mOutStringBuffer.setLength(0);
+                    }
                 }
             }
         });
@@ -721,6 +798,8 @@ public class GameActivity extends WearableActivity {
                         //set current set = 1
                         new_state.setCurrent_set((byte) 0x01);
 
+                        new_state.setDuration(time_use);
+
                         new_state.setSet_point_down((byte) 0x01, (byte) 0x01);
                         //new_state.setSet_1_point_down((byte)0x01);
 
@@ -737,6 +816,7 @@ public class GameActivity extends WearableActivity {
                             //new_state = stack.peek();
                             // copy previous state;
                             new_state.setCurrent_set(current_state.getCurrent_set());
+                            new_state.setDuration(time_use);
                             new_state.setServe(current_state.isServe());
                             new_state.setInTiebreak(current_state.isInTiebreak());
                             new_state.setFinish(current_state.isFinish());
@@ -779,6 +859,8 @@ public class GameActivity extends WearableActivity {
                         //set current set = 1
                         new_state.setCurrent_set((byte) 0x01);
 
+                        new_state.setDuration(time_use);
+
                         new_state.setSet_point_up((byte) 0x01, (byte) 0x01);
 
                         //Log.e(TAG, "get_set_1_point_up = "+new_state.getSet_1_point_up()+", isServe ? "+ (new_state.isServe() ? "YES" : "NO"));
@@ -793,6 +875,7 @@ public class GameActivity extends WearableActivity {
                             //new_state = stack.peek();
                             // copy previous state;
                             new_state.setCurrent_set(current_state.getCurrent_set());
+                            new_state.setDuration(time_use);
                             new_state.setServe(current_state.isServe());
                             new_state.setInTiebreak(current_state.isInTiebreak());
                             new_state.setFinish(current_state.isFinish());
@@ -843,15 +926,45 @@ public class GameActivity extends WearableActivity {
                     //State new_current_state = stack.peek();
                     current_set = new_state.getCurrent_set();
 
+                    if (new_state.getSetsUp() > 0 || new_state.getSetsDown() > 0) {
+                        setLayout.setVisibility(View.VISIBLE);
+                        setUp.setText(String.valueOf(new_state.getSetsUp()));
+                        setDown.setText(String.valueOf(new_state.getSetsDown()));
+                    } else {
+                        setLayout.setVisibility(View.GONE);
+                        setUp.setText("0");
+                        setDown.setText("0");
+                    }
+
                     gameUp.setText(String.valueOf(new_state.getSet_game_up(current_set)));
                     gameDown.setText(String.valueOf(new_state.getSet_game_down(current_set)));
 
-                    if (new_state.isServe()) {
+                    /*if (new_state.isServe()) {
                         imgServeUp.setVisibility(View.INVISIBLE);
                         imgServeDown.setVisibility(View.VISIBLE);
                     } else {
                         imgServeUp.setVisibility(View.VISIBLE);
                         imgServeDown.setVisibility(View.INVISIBLE);
+                    }*/
+                    if (new_state.isFinish()) {
+                        imgServeUp.setVisibility(View.INVISIBLE);
+                        imgServeDown.setVisibility(View.INVISIBLE);
+
+                        if (new_state.getSetsUp() > new_state.getSetsDown()) {
+                            imgWinCheckUp.setVisibility(View.VISIBLE);
+                            imgWinCheckDown.setVisibility(View.INVISIBLE);
+                        } else {
+                            imgWinCheckUp.setVisibility(View.INVISIBLE);
+                            imgWinCheckDown.setVisibility(View.VISIBLE);
+                        }
+                    } else {
+                        if (new_state.isServe()) {
+                            imgServeUp.setVisibility(View.INVISIBLE);
+                            imgServeDown.setVisibility(View.VISIBLE);
+                        } else {
+                            imgServeUp.setVisibility(View.VISIBLE);
+                            imgServeDown.setVisibility(View.INVISIBLE);
+                        }
                     }
 
                     if (!new_state.isInTiebreak()) { //not in tiebreak
@@ -941,6 +1054,8 @@ public class GameActivity extends WearableActivity {
                     //set current set = 1
                     new_state.setCurrent_set((byte) 0x01);
 
+                    new_state.setDuration(time_use);
+
                     new_state.setSet_point_down((byte) 0x01, (byte) 0x01);
                     //new_state.setSet_1_point_down((byte)0x01);
 
@@ -962,6 +1077,8 @@ public class GameActivity extends WearableActivity {
 
                     //set current set = 1
                     new_state.setCurrent_set((byte) 0x01);
+
+                    new_state.setDuration(time_use);
 
                     new_state.setSet_point_up((byte) 0x01, (byte) 0x01);
 
@@ -1424,7 +1541,7 @@ public class GameActivity extends WearableActivity {
                         serve = intent.getStringExtra("SETUP_SERVE");
                      */
 
-                    String message = "command|calibrate&"+set+"&"+tiebreak+"&"+deuce+"&"+serve+"&";
+                    String message = "command|calibrate&"+set+"&"+tiebreak+"&"+deuce+"&"+serve+"&"+time_use+"&";
 
                     String state_msg = "";
                     for (State s : stack) {

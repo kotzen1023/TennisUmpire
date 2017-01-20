@@ -705,17 +705,6 @@ public class GameActivity extends AppCompatActivity{
                             Log.d(TAG, "back_state not null");
                             current_set = back_state.getCurrent_set();
 
-
-                            if (back_state.getSetsUp() > 0 || back_state.getSetsDown() > 0) {
-                                setLayout.setVisibility(View.VISIBLE);
-                                setUp.setText(String.valueOf(back_state.getSetsUp()));
-                                setDown.setText(String.valueOf(back_state.getSetsDown()));
-                            } else {
-                                setLayout.setVisibility(View.GONE);
-                                setUp.setText("0");
-                                setDown.setText("0");
-                            }
-
                             gameUp.setText(String.valueOf(back_state.getSet_game_up(current_set)));
                             gameDown.setText(String.valueOf(back_state.getSet_game_down(current_set)));
 
@@ -775,6 +764,16 @@ public class GameActivity extends AppCompatActivity{
                                 is_second_serve = false;
                                 imgServeUp.setImageResource(R.drawable.ball_icon);
                                 imgServeDown.setImageResource(R.drawable.ball_icon);
+                            }
+
+                            if (back_state.getSetsUp() > 0 || back_state.getSetsDown() > 0) {
+                                setLayout.setVisibility(View.VISIBLE);
+                                setUp.setText(String.valueOf(back_state.getSetsUp()));
+                                setDown.setText(String.valueOf(back_state.getSetsDown()));
+                            } else {
+                                setLayout.setVisibility(View.GONE);
+                                setUp.setText("0");
+                                setDown.setText("0");
                             }
 
                             Log.d(TAG, "########## back state start ##########");

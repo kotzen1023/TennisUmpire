@@ -1,7 +1,10 @@
 package com.seventhmoon.tennisumpire;
 
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -15,6 +18,8 @@ import android.widget.TextView;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
+import static com.seventhmoon.tennisumpire.Data.Constants.ACTION.CLOSE_RESULT_ACTIVITY;
+
 public class ResultActivity extends AppCompatActivity{
     private static final String TAG = ResultActivity.class.getName();
 
@@ -22,6 +27,10 @@ public class ResultActivity extends AppCompatActivity{
     private static String playerUp;
     private static String playerDown;
 
+    private static String wear_mode;
+
+    private BroadcastReceiver mBroadcastReceiver;
+    private boolean isRegister;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,11 +101,15 @@ public class ResultActivity extends AppCompatActivity{
 
         String duration = intent.getStringExtra("GAME_DURATION");
 
+
+
         String win_player = intent.getStringExtra("WIN_PLAYER");
         String lose_player = intent.getStringExtra("LOSE_PLAYER");
 
         playerUp = intent.getStringExtra("PLAYER_UP");
         playerDown = intent.getStringExtra("PLAYER_DOWN");
+
+        wear_mode = intent.getStringExtra("WEAR_MODE");
 
         textViewSet1Up = (TextView) findViewById(R.id.set1_up);
         textViewSet1Down = (TextView) findViewById(R.id.set1_down);
@@ -221,13 +234,67 @@ public class ResultActivity extends AppCompatActivity{
                 finish();
             }
         });
+
+        mBroadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                String action = intent.getAction();
+                if (action.equals(CLOSE_RESULT_ACTIVITY)) {
+                    finish();
+                }
+            }
+        };
+
+        if (!isRegister) {
+            IntentFilter filter = new IntentFilter();
+            filter.addAction(CLOSE_RESULT_ACTIVITY);
+            registerReceiver(mBroadcastReceiver, filter);
+            isRegister = true;
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        Log.i(TAG, "onPause");
+        super.onPause();
+
+    }
+
+    @Override
+    protected void onResume() {
+        Log.i(TAG, "onResume");
+
+        super.onResume();
+    }
+
+    @Override
+    protected void onDestroy() {
+        Log.i(TAG, "onDestroy");
+
+        if (isRegister && mBroadcastReceiver != null) {
+
+            try {
+                unregisterReceiver(mBroadcastReceiver);
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+            }
+            isRegister = false;
+            mBroadcastReceiver = null;
+            Log.d(TAG, "unregisterReceiver mReceiver");
+
+        }
+
+        super.onDestroy();
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {
 
         getMenuInflater().inflate(R.menu.game_activity_menu, menu);
 
-        //item_edit = menu.findItem(R.id.action_edit_group);
+        MenuItem item_stat = menu.findItem(R.id.action_show_stat);
+        if (wear_mode != null && wear_mode.equals("true")) {
+            item_stat.setVisible(false);
+        }
 
         return true;
     }

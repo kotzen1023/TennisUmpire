@@ -16,6 +16,62 @@
         android:layout_height="match_parent"
         app:layout_box="all">
 
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="4">
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1">
+
+                <TextView
+                    android:text=""
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:id="@+id/gameTime"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:textSize="20sp"/>
+
+                <ImageView
+                    android:src="@drawable/ic_pause_white_48dp"
+                    android:layout_width="48dp"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/imagePlayOrPause"
+                    android:layout_weight="1" />
+
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="2">
+
+
+
+                <TextView
+                    android:text=""
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:id="@+id/currentTime"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:textSize="20sp"/>
+
+
+            </LinearLayout>
+
+
+
+
+        </LinearLayout>
+
 
         <LinearLayout
             android:orientation="horizontal"
@@ -51,6 +107,33 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1">
 
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:id="@+id/setLayout"
+                    android:layout_weight="3"
+                    android:visibility="gone">
+
+
+                    <TextView
+                        android:text="2"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/textViewSetUp"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:textSize="40sp"/>
+
+                    <TextView
+                        android:text="3"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/textViewSetDown"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:textSize="40sp"/>
+                </LinearLayout>
 
                 <LinearLayout
                     android:orientation="vertical"
@@ -108,7 +191,13 @@
                             android:paddingLeft="10dp"
                             android:textSize="40sp"/>
 
-
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:src="@drawable/ic_done_white_48dp"
+                            android:id="@+id/imageWearWincheckUp"
+                            android:layout_weight="1"
+                            android:visibility="gone"/>
                     </LinearLayout>
 
                     <LinearLayout
@@ -134,6 +223,14 @@
                             android:gravity="center_vertical"
                             android:paddingLeft="10dp"
                             android:textSize="40sp"/>
+
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:src="@drawable/ic_done_white_48dp"
+                            android:id="@+id/imageWearWincheckDown"
+                            android:layout_weight="1"
+                            android:visibility="gone"/>
                     </LinearLayout>
 
                 </LinearLayout>
@@ -142,112 +239,29 @@
             </LinearLayout>
         </LinearLayout>
 
-
-
         <LinearLayout
             android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="3">
+            android:layout_weight="4">
 
-            <LinearLayout
-                android:orientation="vertical"
+            <ImageView
+                android:src="@drawable/ic_settings_white_48dp"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_weight="1">
+                android:id="@+id/btnImgReset"
+                android:layout_weight="3" />
 
-                <LinearLayout
-                    android:orientation="horizontal"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1">
-
-                    <Button
-                        android:text="Opp"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:id="@+id/btnOpptScore"
-                        android:textSize="7sp"
-                        android:layout_weight="1"
-                        android:backgroundTint="@android:color/holo_blue_dark" />
-
-                    <ImageView
-                        android:src="@drawable/ic_undo_white_48dp"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:id="@+id/btnImgBack"
-                        android:layout_weight="1" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:orientation="horizontal"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1">
-
-
-
-                    <Button
-                        android:text="You"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:id="@+id/btnYouScore"
-                        android:textSize="7sp"
-                        android:layout_weight="1"
-                        android:backgroundTint="?android:attr/colorActivatedHighlight" />
-
-                    <ImageView
-                        android:src="@drawable/ic_settings_white_48dp"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:id="@+id/btnImgReset"
-                        android:layout_weight="1" />
-                </LinearLayout>
-            </LinearLayout>
-
-
-
-            <LinearLayout
-                android:orientation="vertical"
+            <ImageView
+                android:src="@drawable/ic_undo_white_48dp"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_weight="1">
-
-                <LinearLayout
-                    android:orientation="horizontal"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1">
-
-                    <TextView
-                        android:text=""
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:id="@+id/currentTime"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:textSize="20sp"/>
-
-                    <ImageView
-                        android:src="@drawable/ic_pause_white_48dp"
-                        android:layout_width="48dp"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/imagePlayOrPause"
-                        android:layout_weight="1" />
+                android:id="@+id/btnImgBack"
+                android:layout_weight="3" />
 
 
-                </LinearLayout>
-
-                <TextView
-                    android:text=""
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:id="@+id/gameTime"
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:textSize="20sp"/>
-            </LinearLayout>
         </LinearLayout>
+
     </LinearLayout>
 
 

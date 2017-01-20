@@ -8,6 +8,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.hardware.SensorEventListener;
 import android.os.Bundle;
 import android.os.Handler;
@@ -25,6 +26,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.seventhmoon.tennisumpire.Bluetooth.BluetoothService;
+import com.seventhmoon.tennisumpire.Data.Constants;
 import com.seventhmoon.tennisumpire.Data.State;
 import com.seventhmoon.tennisumpire.Data.StateAction;
 
@@ -60,6 +62,7 @@ public class WearModeGameActivity extends AppCompatActivity {
     private static final int REQUEST_ENABLE_BT = 3;
 
     LinearLayout nameLayout;
+    LinearLayout wearLayout;
     private TextView gameUp;
     private TextView gameDown;
     private TextView pointUp;
@@ -75,6 +78,9 @@ public class WearModeGameActivity extends AppCompatActivity {
 
     private ImageView imgPlayOrPause;
     private TextView stepAndDistance;
+
+    private TextView textCurrentTime;
+    private TextView textGameTime;
 
     //private TextView mClockView;
 
@@ -245,8 +251,12 @@ public class WearModeGameActivity extends AppCompatActivity {
         imgServeUp = (ImageView) findViewById(R.id.imageViewServeUp);
         imgServeDown = (ImageView) findViewById(R.id.imageViewServeDown);
 
+        textCurrentTime = (TextView) findViewById(R.id.currentTime);
+        textGameTime = (TextView) findViewById(R.id.gameTime);
+
         setLayout = (LinearLayout) findViewById(R.id.setLayout);
         nameLayout = (LinearLayout) findViewById(R.id.nameLayout);
+        wearLayout = (LinearLayout) findViewById(R.id.wearLayout);
         setUp = (TextView) findViewById(R.id.textViewSetUp);
         setDown = (TextView) findViewById(R.id.textViewSetDown);
 
@@ -310,7 +320,19 @@ public class WearModeGameActivity extends AppCompatActivity {
 
     }
 
-
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        // TODO Auto-generated method stub
+        super.onConfigurationChanged(newConfig);
+        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            Log.d(TAG, "ORIENTATION_LANDSCAPE");
+            wearLayout.setOrientation(LinearLayout.HORIZONTAL);
+        }
+        else {
+            Log.d(TAG, "ORIENTATION_PORTRAIT");
+            wearLayout.setOrientation(LinearLayout.VERTICAL);
+        }
+    }
 
     @Override
     protected void onDestroy() {
@@ -367,6 +389,23 @@ public class WearModeGameActivity extends AppCompatActivity {
         State current_state = stack.peek();
 
         int set_limit;
+
+        if (set == null) {
+            set = "0";
+        }
+
+        if (tiebreak == null) {
+            tiebreak = "0";
+        }
+
+        if (deuce == null) {
+            deuce = "0";
+        }
+
+        if (serve == null) {
+            serve = "0";
+        }
+
         switch (set)
         {
             case "0":
@@ -433,6 +472,19 @@ public class WearModeGameActivity extends AppCompatActivity {
                 intent.putExtra("SET5_TIEBREAK_DOWN", String.valueOf(current_state.getSet_tiebreak_point_down((byte)0x05)));
 
                 intent.putExtra("GAME_DURATION", String.valueOf(String.valueOf(time_use)));
+
+                intent.putExtra("PLAYER_UP", playerUp);
+                intent.putExtra("PLAYER_DOWN", playerDown);
+                if (current_state.getSetsUp() > current_state.getSetsDown()) {
+                    intent.putExtra("WIN_PLAYER", playerUp);
+                    intent.putExtra("LOSE_PLAYER", playerDown);
+                } else {
+                    intent.putExtra("WIN_PLAYER", playerDown);
+                    intent.putExtra("LOSE_PLAYER", playerUp);
+                }
+
+                intent.putExtra("WEAR_MODE", "true");
+
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
@@ -573,8 +625,39 @@ public class WearModeGameActivity extends AppCompatActivity {
                     //State new_current_state = stack.peek();
                     current_set = new_state.getCurrent_set();
 
+                    if (new_state.getSetsUp() > 0 || new_state.getSetsDown() > 0) {
+                        setLayout.setVisibility(View.VISIBLE);
+                        setUp.setText(String.valueOf(new_state.getSetsUp()));
+                        setDown.setText(String.valueOf(new_state.getSetsDown()));
+                    } else {
+                        setLayout.setVisibility(View.GONE);
+                        setUp.setText("0");
+                        setDown.setText("0");
+                    }
+
                     gameUp.setText(String.valueOf(new_state.getSet_game_up(current_set)));
                     gameDown.setText(String.valueOf(new_state.getSet_game_down(current_set)));
+
+                    if (new_state.isFinish()) {
+                        imgServeUp.setVisibility(View.INVISIBLE);
+                        imgServeDown.setVisibility(View.INVISIBLE);
+
+                        if (new_state.getSetsUp() > new_state.getSetsDown()) {
+                            imgWinCheckUp.setVisibility(View.VISIBLE);
+                            imgWinCheckDown.setVisibility(View.GONE);
+                        } else {
+                            imgWinCheckUp.setVisibility(View.GONE);
+                            imgWinCheckDown.setVisibility(View.VISIBLE);
+                        }
+                    } else {
+                        if (new_state.isServe()) {
+                            imgServeUp.setVisibility(View.INVISIBLE);
+                            imgServeDown.setVisibility(View.VISIBLE);
+                        } else {
+                            imgServeUp.setVisibility(View.VISIBLE);
+                            imgServeDown.setVisibility(View.INVISIBLE);
+                        }
+                    }
 
                     if (new_state.isServe()) {
                         imgServeUp.setVisibility(View.INVISIBLE);
@@ -1119,7 +1202,35 @@ public class WearModeGameActivity extends AppCompatActivity {
 
 
 
+    private Runnable updateTimer = new Runnable() {
+        public void run() {
+            //final TextView time = (TextView) findViewById(R.id.currentTime);
+            NumberFormat f = new DecimalFormat("00");
+            //Long spentTime = System.currentTimeMillis() - startTime;
+            //計算目前已過分鐘數
 
+            //計算目前已過秒數
+            //Long seconds = (time_use) % 60;
+            //time.setText(minius+":"+seconds);
+
+            handler.postDelayed(this, 1000);
+            time_use++;
+
+            Log.d(TAG, "time_use = "+time_use);
+
+            Calendar cal = Calendar.getInstance();
+            TimeZone tz = cal.getTimeZone();
+            SimpleDateFormat sdf = new SimpleDateFormat("hh:mm");
+            sdf.setTimeZone(tz);//set time zone.
+            Date netDate = new Date(System.currentTimeMillis());
+
+            Long hour = (time_use)/3600;
+            Long min = (time_use)%3600/60;
+            Long sec = (time_use)%60;
+            textCurrentTime.setText(sdf.format(netDate));
+            textGameTime.setText(f.format(hour)+":"+f.format(min)+":"+f.format(sec));
+        }
+    };
 
     /**
      * The Handler that gets information back from the BluetoothChatService
@@ -1303,6 +1414,11 @@ public class WearModeGameActivity extends AppCompatActivity {
                     playerDown = "Player2";
                 nameLayout.setVisibility(View.VISIBLE);
             }
+
+            //init time
+            handler.removeCallbacks(updateTimer);
+            handler.postDelayed(updateTimer, 1000);
+
         } if (msg.contains("calibrate")) {
             Log.d(TAG, "=> calibrate");
             stack.clear();
@@ -1311,7 +1427,8 @@ public class WearModeGameActivity extends AppCompatActivity {
             tiebreak = msgArray[2];
             deuce = msgArray[3];
             serve = msgArray[4];
-            String stateArray[] = msgArray[5].split(";");
+            time_use = Long.valueOf(msgArray[5]);
+            String stateArray[] = msgArray[6].split(";");
             for (int i=0; i <stateArray.length;i++) {
                 Log.d(TAG, "stateArray["+i+"]="+stateArray[i]);
                 calculateScore(Boolean.valueOf(stateArray[i]));
@@ -1319,6 +1436,17 @@ public class WearModeGameActivity extends AppCompatActivity {
         } else {
 
             switch (msg) {
+                case "close":
+                    Intent myIntent = new Intent(Constants.ACTION.CLOSE_RESULT_ACTIVITY);
+                    sendBroadcast(myIntent);
+                    break;
+                case "pause":
+                    handler.removeCallbacks(updateTimer);
+                    break;
+                case "play":
+                    handler.removeCallbacks(updateTimer);
+                    handler.postDelayed(updateTimer, 1000);
+                    break;
                 case "you":
                     Log.d(TAG, "=> you");
                     calculateScore(true);
@@ -1332,6 +1460,10 @@ public class WearModeGameActivity extends AppCompatActivity {
                     break;
                 case "back":
                     Log.d(TAG, "=> back");
+
+                    imgWinCheckUp.setVisibility(View.GONE);
+                    imgWinCheckDown.setVisibility(View.GONE);
+
                     if (stack.isEmpty()) {
                         Log.d(TAG, "stack is empty");
                     } else {
@@ -1385,6 +1517,16 @@ public class WearModeGameActivity extends AppCompatActivity {
                                     }
                                 } else {
                                     pointDown.setText(String.valueOf(back_state.getSet_point_down(current_set)));
+                                }
+
+                                if (back_state.getSetsUp() > 0 || back_state.getSetsDown() > 0) {
+                                    setLayout.setVisibility(View.VISIBLE);
+                                    setUp.setText(String.valueOf(back_state.getSetsUp()));
+                                    setDown.setText(String.valueOf(back_state.getSetsDown()));
+                                } else {
+                                    setLayout.setVisibility(View.GONE);
+                                    setUp.setText("0");
+                                    setDown.setText("0");
                                 }
 
                                 Log.d(TAG, "########## back state start ##########");

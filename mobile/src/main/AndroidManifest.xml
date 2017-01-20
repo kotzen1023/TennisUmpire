@@ -8,6 +8,7 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.CHANGE_CONFIGURATION" />
 
     <application
         android:allowBackup="true"
@@ -24,13 +25,14 @@
             </intent-filter>
         </activity>
         <activity android:name=".SetupMain"/>
-        <activity android:name=".GameActivity"/>
+        <activity android:name=".GameActivity" />
         <activity android:name=".LoadGame"/>
         <activity android:name=".ResultActivity"/>
         <activity android:name=".CurrentStatActivity"/>
         <activity android:name=".DeviceListActivity"/>
         <activity android:name=".NormalModeActivity"/>
-        <activity android:name=".WearModeGameActivity"/>
+        <activity android:name=".WearModeGameActivity"
+             android:configChanges="orientation|screenSize"/>
     </application>
 
 </manifest>
